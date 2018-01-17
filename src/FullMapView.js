@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {
   StyleSheet,
-  View
+  View,
+  Text,
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
@@ -9,16 +10,49 @@ import MapboxGL from '@mapbox/react-native-mapbox-gl';
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
 export default class FullMapView extends Component {
+  state = {
+    selectedFeature: null,
+  }
   onPressMap = (res) => {
     console.log('onPressMap : ', res);
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY])
-    .then((query) => console.log('query : ', query))
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
+      .then((query) => {
+        console.log('query : ', query);
+        if (query.features.length > 0) {
+          const selectedFeature = query.features[0];
+          this.setSelectedFeature(selectedFeature)
+        } else {
+          this.setSelectedFeature(null)
+        }
+
+      })
+  }
+
+  setSelectedFeature = (selectedFeature) => {
+    this.setState({
+      selectedFeature
+    })
+  }
+
+  displayInfoBox = () => {
+    const { selectedFeature } = this.state
+    if (selectedFeature !== null) {
+      const { coordinates } = selectedFeature.geometry;
+      return (
+        <MapboxGL.PointAnnotation id={'selected-feature'} coordinate={coordinates} >
+          <View>
+            <Text>Hi</Text>
+          </View>
+        </MapboxGL.PointAnnotation>
+      )
+    }
+    return null
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <MapboxGL.MapView 
+        <MapboxGL.MapView
           ref={(ref) => this._map = ref}
           style={styles.container}
           styleURL={'http://172.16.16.23:1111/getMapStyle'}
@@ -30,16 +64,16 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            //url={'http://localhost:1111/tile/{z}/{x}/{y}.pbf'}
+          //url={'http://localhost:1111/tile/{z}/{x}/{y}.pbf'}
           >
-            <MapboxGL.SymbolLayer 
+            <MapboxGL.SymbolLayer
               id={'tn-jobthai-company'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
               style={symbolStyle.company}
               filter={["==", "type", "company"]}
             />
-            <MapboxGL.SymbolLayer 
+            <MapboxGL.SymbolLayer
               id={'tn-jobthai-jobs'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
@@ -47,6 +81,7 @@ export default class FullMapView extends Component {
               filter={["==", "type", "job"]}
             />
           </MapboxGL.VectorSource>
+          {this.displayInfoBox()}
         </MapboxGL.MapView>
       </View>
     );
