@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
@@ -14,10 +15,8 @@ export default class FullMapView extends Component {
     selectedFeature: null,
   }
   onPressMap = (res) => {
-    console.log('onPressMap : ', res);
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
       .then((query) => {
-        console.log('query : ', query);
         if (query.features.length > 0) {
           const selectedFeature = query.features[0];
           this.setSelectedFeature(selectedFeature)
@@ -36,13 +35,43 @@ export default class FullMapView extends Component {
 
   displayInfoBox = () => {
     const { selectedFeature } = this.state
+    console.log('selectedFeature : ', selectedFeature)
     if (selectedFeature !== null) {
       const { coordinates } = selectedFeature.geometry;
+      const { name } = selectedFeature.properties;
       return (
-        <MapboxGL.PointAnnotation id={'selected-feature'} coordinate={coordinates} >
-          <View>
-            <Text>Hi</Text>
+        <MapboxGL.PointAnnotation
+          id={'selected-feature'}
+          coordinate={coordinates}
+          anchor={{ x: 0.5, y: 2 }}
+        >
+          <View style={styles.infoContainer} >
+            <TouchableOpacity style={styles.infoBox} >
+              <Text>{name}</Text>
+            </TouchableOpacity>
+            <View style={styles.arrowDown} />
           </View>
+        </MapboxGL.PointAnnotation>
+      )
+    }
+    return null
+  }
+
+  renderAnnotation = () => {
+    const { selectedFeature } = this.state
+    console.log('selectedFeature : ', selectedFeature)
+    if (selectedFeature !== null) {
+      const { coordinates } = selectedFeature.geometry;
+      const { name } = selectedFeature.properties;
+      return (
+        <MapboxGL.PointAnnotation
+          id={'selected-feature'}
+          title={name}
+          coordinate={coordinates}
+          selected={true}
+        >
+          <View style={{height:0,}} />
+          <MapboxGL.Callout title={name} />
         </MapboxGL.PointAnnotation>
       )
     }
@@ -81,18 +110,40 @@ export default class FullMapView extends Component {
               filter={["==", "type", "job"]}
             />
           </MapboxGL.VectorSource>
-          {this.displayInfoBox()}
+          {this.renderAnnotation()}
         </MapboxGL.MapView>
       </View>
     );
   }
 }
 
+const INFO_BOX_COLOR = 'teal';
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-});
+
+  infoContainer: {
+    alignItems: 'center',
+  },
+
+  infoBox: {
+    padding: 10,
+    backgroundColor: INFO_BOX_COLOR,
+  },
+
+  arrowDown: {
+    width: 0,
+    height: 0,
+    borderRightWidth: 10,
+    borderLeftWidth: 10,
+    borderTopWidth: 10,
+    borderTopColor: INFO_BOX_COLOR,
+    borderRightColor: 'transparent',
+    borderLeftColor: 'transparent',
+  },
+})
 
 const symbolStyle = MapboxGL.StyleSheet.create({
   company: {
