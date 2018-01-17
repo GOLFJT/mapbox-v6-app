@@ -23,15 +23,13 @@ export default class FullMapView extends Component {
           style={styles.container}
           styleURL={'http://172.16.16.23:1111/getMapStyle'}
           //styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
-          //centerCoordinate={[100.5314, 13.7270]}
-          centerCoordinate={[100.53137183189392, 13.727066145291033]}
+          centerCoordinate={[100.5314, 13.7270]}
           zoomLevel={10}
           logoEnabled={false}
           onPress={this.onPressMap}
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            //url={'mapbox://nickitaliano.cj94go8xl18fl2qp92v8bdivv-4kgl9'}
             //url={'http://localhost:1111/tile/{z}/{x}/{y}.pbf'}
           >
             <MapboxGL.SymbolLayer 
