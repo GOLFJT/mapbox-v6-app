@@ -17,6 +17,7 @@ export default class FullMapView extends Component {
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
       .then((query) => {
+        console.log('query : ', query.features)
         if (query.features.length > 0) {
           const selectedFeature = query.features[0];
           this.setSelectedFeature(selectedFeature)
@@ -45,12 +46,12 @@ export default class FullMapView extends Component {
           coordinate={coordinates}
           anchor={{ x: 0.5, y: 2 }}
         >
-          <View style={styles.infoContainer} >
-            <TouchableOpacity style={styles.infoBox} >
+          <TouchableOpacity style={styles.infoContainer} >
+            <View style={styles.infoBox} >
               <Text>{name}</Text>
-            </TouchableOpacity>
+            </View>
             <View style={styles.arrowDown} />
-          </View>
+          </TouchableOpacity>
         </MapboxGL.PointAnnotation>
       )
     }
@@ -110,7 +111,7 @@ export default class FullMapView extends Component {
               filter={["==", "type", "job"]}
             />
           </MapboxGL.VectorSource>
-          {this.renderAnnotation()}
+          {this.displayInfoBox()}
         </MapboxGL.MapView>
       </View>
     );
@@ -161,5 +162,6 @@ const symbolStyle = MapboxGL.StyleSheet.create({
     ],
     textAnchor: MapboxGL.TextAnchor.Top,
     iconImage: 'tn-Comm_Comp-12',
+    visibility: 'visible',
   }
 })
