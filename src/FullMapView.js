@@ -94,15 +94,24 @@ export default class FullMapView extends Component {
           zoomLevel={5}
           logoEnabled={false}
           onPress={this.onPressMap}
+          pitchEnabled={false}
         >
           <MapboxGL.ShapeSource
-            id={'stations'}
+            id={'postal'}
             shape={PostalData}
+            cluster={true}
+            clusterRadius={20}
           >
             <MapboxGL.CircleLayer 
-              id={'circle'}
+              id={'postal'}
               sourceID={'stations'}
               style={circleStyle.circle}
+            />
+            <MapboxGL.SymbolLayer 
+              id={'postal_count'}
+              sourceID={'stations'}
+              style={symbolStyle.clusterCount}
+              filter={['has', 'point_count']}
             />
           </MapboxGL.ShapeSource>
         </MapboxGL.MapView>
@@ -157,6 +166,12 @@ const symbolStyle = MapboxGL.StyleSheet.create({
     iconImage: 'tn-Comm_Comp-12',
     visibility: 'visible',
   },
+
+  clusterCount: {
+    textField: '{point_count}',
+    //textField: 'Hello',
+    textSize: 12,
+  }
 })
 
 const circleStyle = MapboxGL.StyleSheet.create({
