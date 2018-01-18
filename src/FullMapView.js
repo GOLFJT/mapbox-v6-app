@@ -8,6 +8,8 @@ import {
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 
+import PostalData from './data/postal_data.json'
+
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
 export default class FullMapView extends Component {
@@ -15,7 +17,7 @@ export default class FullMapView extends Component {
     selectedFeature: null,
   }
   onPressMap = (res) => {
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['circle'])
       .then((query) => {
         console.log('query : ', query.features)
         if (query.features.length > 0) {
@@ -88,30 +90,21 @@ export default class FullMapView extends Component {
           styleURL={'http://172.16.16.23:1111/getMapStyle'}
           //styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
-          zoomLevel={10}
+          //centerCoordinate={[-77.12911152370515, 38.79930767201779]}
+          zoomLevel={5}
           logoEnabled={false}
           onPress={this.onPressMap}
         >
-          <MapboxGL.VectorSource
-            id={'jobthai'}
-          //url={'http://localhost:1111/tile/{z}/{x}/{y}.pbf'}
+          <MapboxGL.ShapeSource
+            id={'stations'}
+            shape={PostalData}
           >
-            <MapboxGL.SymbolLayer
-              id={'tn-jobthai-company'}
-              sourceID={'jobthai'}
-              sourceLayerID={'geojsonLayer'}
-              style={symbolStyle.company}
-              filter={["==", "type", "company"]}
+            <MapboxGL.CircleLayer 
+              id={'circle'}
+              sourceID={'stations'}
+              style={circleStyle.circle}
             />
-            <MapboxGL.SymbolLayer
-              id={'tn-jobthai-jobs'}
-              sourceID={'jobthai'}
-              sourceLayerID={'geojsonLayer'}
-              style={symbolStyle.company}
-              filter={["==", "type", "job"]}
-            />
-          </MapboxGL.VectorSource>
-          {this.displayInfoBox()}
+          </MapboxGL.ShapeSource>
         </MapboxGL.MapView>
       </View>
     );
@@ -163,5 +156,12 @@ const symbolStyle = MapboxGL.StyleSheet.create({
     textAnchor: MapboxGL.TextAnchor.Top,
     iconImage: 'tn-Comm_Comp-12',
     visibility: 'visible',
+  },
+})
+
+const circleStyle = MapboxGL.StyleSheet.create({
+  circle: {
+    circleColor: '#f44336',
+    circleRadius: 10,
   }
 })
