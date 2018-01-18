@@ -17,7 +17,7 @@ export default class FullMapView extends Component {
     selectedFeature: null,
   }
   onPressMap = (res) => {
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['postal'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['circle'])
       .then((query) => {
         console.log('query : ', query.features)
         if (query.features.length > 0) {
@@ -103,13 +103,13 @@ export default class FullMapView extends Component {
             clusterRadius={20}
           >
             <MapboxGL.CircleLayer 
-              id={'postal'}
-              sourceID={'stations'}
+              id={'circle'}
+              sourceID={'postal'}
               style={circleStyle.circle}
             />
             <MapboxGL.SymbolLayer 
               id={'postal_count'}
-              sourceID={'stations'}
+              sourceID={'postal'}
               style={symbolStyle.clusterCount}
               filter={['has', 'point_count']}
             />
