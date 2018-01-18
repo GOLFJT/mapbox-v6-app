@@ -85,8 +85,8 @@ export default class FullMapView extends Component {
         <MapboxGL.MapView
           ref={(ref) => this._map = ref}
           style={styles.container}
-          styleURL={'http://172.16.16.23:1111/getMapStyle'}
-          //styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
+          //styleURL={'http://172.16.16.23:1111/getMapStyle'}
+          styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
           zoomLevel={10}
           logoEnabled={false}
@@ -94,7 +94,8 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-          //url={'http://localhost:1111/tile/{z}/{x}/{y}.pbf'}
+          url={'http://172.16.16.23:1111/getTileJSON'}
+          //url={'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json'}
           >
             <MapboxGL.SymbolLayer
               id={'tn-jobthai-company'}
