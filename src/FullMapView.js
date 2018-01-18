@@ -17,7 +17,7 @@ export default class FullMapView extends Component {
     selectedFeature: null,
   }
   onPressMap = (res) => {
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['circle'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['clusteredPoints', 'singlePoint'])
       .then((query) => {
         console.log('query : ', query.features)
         if (query.features.length > 0) {
@@ -103,15 +103,22 @@ export default class FullMapView extends Component {
             clusterRadius={20}
           >
             <MapboxGL.CircleLayer 
-              id={'circle'}
+              id={'clusteredPoints'}
               sourceID={'postal'}
-              style={circleStyle.circle}
+              style={circleStyle.clusteredPoints}
+              filter={['has', 'point_count']}
             />
             <MapboxGL.SymbolLayer 
               id={'postal_count'}
               sourceID={'postal'}
               style={symbolStyle.clusterCount}
               filter={['has', 'point_count']}
+            />
+            <MapboxGL.CircleLayer 
+              id={'singlePoint'}
+              sourceID={'postal'}
+              style={circleStyle.singlePoint}
+              filter={['!has', 'point_count']}
             />
           </MapboxGL.ShapeSource>
         </MapboxGL.MapView>
@@ -169,15 +176,34 @@ const symbolStyle = MapboxGL.StyleSheet.create({
 
   clusterCount: {
     textField: '{point_count}',
-    //textField: 'Hello',
     textSize: 12,
+    textAllowOverlap: true,
   }
 })
 
 const circleStyle = MapboxGL.StyleSheet.create({
-  circle: {
-    circleColor: '#f44336',
-    // circleColor: MapboxGL.StyleSheet
-    circleRadius: 10,
-  }
+  clusteredPoints: {
+    circleColor: MapboxGL.StyleSheet.source([
+      [0, '#51bbd6'],  // blue
+      [20, '#f1f075'],  // yellow
+      [80, '#f28cb1'],  // pink
+    ], 'point_count', MapboxGL.InterpolationMode.Exponential),
+
+    circleRadius: MapboxGL.StyleSheet.source([
+      [0, 10],
+      [20, 15],
+      [80, 30],
+    ], 'point_count', MapboxGL.InterpolationMode.Exponential),
+    
+    circleStrokeWidth: 2,
+    circleStrokeColor: 'white',
+  },
+
+  singlePoint: {
+    circleColor: 'green',
+    circleOpacity: 0.84,
+    circleStrokeWidth: 2,
+    circleStrokeColor: 'white',
+    circleRadius: 5,
+  },
 })
