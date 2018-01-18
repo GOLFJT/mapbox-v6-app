@@ -17,7 +17,7 @@ export default class FullMapView extends Component {
     selectedFeature: null,
   }
   onPressMap = (res) => {
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['circle'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['postal'])
       .then((query) => {
         console.log('query : ', query.features)
         if (query.features.length > 0) {
