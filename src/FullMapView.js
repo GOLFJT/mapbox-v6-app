@@ -177,6 +177,7 @@ const symbolStyle = MapboxGL.StyleSheet.create({
 const circleStyle = MapboxGL.StyleSheet.create({
   circle: {
     circleColor: '#f44336',
+    // circleColor: MapboxGL.StyleSheet
     circleRadius: 10,
   }
 })

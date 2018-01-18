@@ -7,7 +7,12 @@
       "properties": {
         "zip": "10200",
         "province": "กรุงเทพมหานคร",
-        "district": "พระนคร"
+        "district": "พระนคร",
+        "jobs": [
+          {
+            "type": "test"
+          }
+        ]
       },
       "geometry": {
         "type": "Point",
