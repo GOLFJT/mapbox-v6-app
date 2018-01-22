@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@mapbox/react-native-mapbox-gl": "6.0.2",
+    "@turf/bbox": "5.1.5",
+    "@turf/envelope": "5.1.5",
     "react": "16.0.0",
     "react-native": "0.51",
     "supercluster": "^3.0.2"
