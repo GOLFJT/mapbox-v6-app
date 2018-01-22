@@ -71,10 +71,18 @@ export default class FullMapView extends Component {
         
         if (query.features.length > 0) {
           let feature = query.features[0]
+          // console.log('feature : ', feature)
           const { cluster_id } = feature.properties
           if (cluster_id) {
             const clusterChild = this.cluster.getChildren(cluster_id)
             console.log('clusterChild : ', clusterChild)
+            const expansionZoom = this.cluster.getClusterExpansionZoom(cluster_id)
+            console.log('expansionZoom : ', expansionZoom)
+            const featureCoords = feature.geometry.coordinates
+            this._map.setCamera({
+              centerCoordinate: featureCoords,
+              zoom: expansionZoom
+            })
           }
         }
 
