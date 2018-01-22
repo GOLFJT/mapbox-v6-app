@@ -8,6 +8,7 @@ import {
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 import turf from '@turf/helpers'
+import bbox from '@turf/bbox'
 import supercluster from 'supercluster'
 
 import PostalData from './data/postal_data.json'
@@ -74,19 +75,36 @@ export default class FullMapView extends Component {
           // console.log('feature : ', feature)
           const { cluster_id } = feature.properties
           if (cluster_id) {
-            const clusterChild = this.cluster.getChildren(cluster_id)
+            // const clusterChild = this.cluster.getChildren(cluster_id)
+            const clusterChild = this.cluster.getLeaves(cluster_id, 'Infinity')   // default limit at 10 -> set to infinity to get all points
             console.log('clusterChild : ', clusterChild)
-            const expansionZoom = this.cluster.getClusterExpansionZoom(cluster_id)
-            console.log('expansionZoom : ', expansionZoom)
-            const featureCoords = feature.geometry.coordinates
-            this._map.setCamera({
-              centerCoordinate: featureCoords,
-              zoom: expansionZoom
-            })
+
+            this.fitBoundToPoints(clusterChild)
+
+            // const expansionZoom = this.cluster.getClusterExpansionZoom(cluster_id)
+            // console.log('expansionZoom : ', expansionZoom)
+            // const featureCoords = feature.geometry.coordinates
+            // this._map.setCamera({
+            //   centerCoordinate: featureCoords,
+            //   zoom: expansionZoom
+            // })
           }
         }
 
       })
+  }
+
+  fitBoundToPoints = (clusterChild) => {
+    const features = turf.featureCollection(clusterChild)
+    console.log('features : ', features)
+    const bboxBound = bbox(features)
+    console.log('bboxBound : ', bboxBound)
+
+    const northEastCoordinates = [bboxBound[0], bboxBound[1]]
+    const southWestCoordinates = [bboxBound[2], bboxBound[3]]
+
+    this._map.fitBounds(northEastCoordinates, southWestCoordinates, 50)
+
   }
 
   render() {
@@ -102,12 +120,15 @@ export default class FullMapView extends Component {
           logoEnabled={false}
           onPress={this.onPressMap}
           pitchEnabled={false}
-          onDidFinishLoadingMap={this.onDidFinishLoadingMap}
           onRegionDidChange={this.onRegionDidChange}
+          onRegionWillChange={()=>console.log('onRegionWillChange')}
+          onRegionIsChanging={()=>console.log('onRegionIsChanging')}
+          onDidFinishLoadingMap={this.onDidFinishLoadingMap}
         >
           <MapboxGL.ShapeSource
             id={'postal'}
             shape={this.state.clusterData}
+            //shape={PostalData}
             cluster={true}
             clusterRadius={CLUSTER_RADIUS}
           >
