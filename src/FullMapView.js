@@ -7,16 +7,37 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
+import supercluster from 'supercluster'
 
 import PostalData from './data/postal_data.json'
 
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
+const CLUSTER_RADIUS = 20
+
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
   }
-  onPressMap = (res) => {
+
+  constructor(props) {
+    super(props)
+
+    this.onPressMap = this.onPressMap.bind(this)
+  }
+
+  componentDidMount() {
+    this.cluster = supercluster({
+      radius: CLUSTER_RADIUS
+    })
+
+  }
+
+  onLoadMap = () => {
+    this.cluster.load(PostalData.features)
+  }
+
+  async onPressMap(res) {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['clusteredPoints', 'singlePoint'])
       .then((query) => {
         console.log('query : ', query.features)
@@ -28,6 +49,19 @@ export default class FullMapView extends Component {
         }
 
       })
+
+    const visibleBounds = await this._map.getVisibleBounds();
+    console.log('visibleBounds : ', visibleBounds)
+
+    const bbox = [...visibleBounds[1], ...visibleBounds[0]]
+
+    console.log('bbox : ', bbox)
+
+    const clusterData = this.cluster.getClusters(bbox, 5)
+    console.log('clusterData : ', clusterData)
+
+    const clusterChild = this.cluster.getChildren(7430)
+    console.log('clusterChild : ', clusterChild)
   }
 
   setSelectedFeature = (selectedFeature) => {
@@ -95,12 +129,13 @@ export default class FullMapView extends Component {
           logoEnabled={false}
           onPress={this.onPressMap}
           pitchEnabled={false}
+          onDidFinishLoadingMap={this.onLoadMap}
         >
           <MapboxGL.ShapeSource
             id={'postal'}
             shape={PostalData}
             cluster={true}
-            clusterRadius={20}
+            clusterRadius={CLUSTER_RADIUS}
           >
             <MapboxGL.CircleLayer 
               id={'clusteredPoints'}
