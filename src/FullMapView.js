@@ -68,11 +68,20 @@ export default class FullMapView extends Component {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['clusteredPoints', 'singlePoint'])
       .then((query) => {
         console.log('query : ', query.features)
+        // if (query.features.length > 0) {
+        //   const selectedFeature = query.features[0];
+        //   this.setSelectedFeature(selectedFeature)
+        // } else {
+        //   this.setSelectedFeature(null)
+        // }
+        
         if (query.features.length > 0) {
-          const selectedFeature = query.features[0];
-          this.setSelectedFeature(selectedFeature)
-        } else {
-          this.setSelectedFeature(null)
+          let feature = query.features[0]
+          const { cluster_id } = feature.properties
+          if (cluster_id) {
+            const clusterChild = this.cluster.getChildren(cluster_id)
+            console.log('clusterChild : ', clusterChild)
+          }
         }
 
       })
