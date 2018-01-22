@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
+import turf from '@turf/helpers'
 import supercluster from 'supercluster'
 
 import PostalData from './data/postal_data.json'
@@ -14,16 +15,20 @@ import PostalData from './data/postal_data.json'
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
 const CLUSTER_RADIUS = 20
+const INITIAL_ZOOM_LEVEL = 5
+const WORLD_BOUND = [-180.0000, -90.0000, 180.0000, 90.0000];
+
 
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
+    clusterData: null,
   }
 
   constructor(props) {
     super(props)
 
-    this.onPressMap = this.onPressMap.bind(this)
+    this.currentZoomLevel = INITIAL_ZOOM_LEVEL
   }
 
   componentDidMount() {
@@ -31,13 +36,42 @@ export default class FullMapView extends Component {
       radius: CLUSTER_RADIUS
     })
 
-  }
-
-  onLoadMap = () => {
     this.cluster.load(PostalData.features)
+
+    this.setState({
+      clusterData: PostalData
+    })
   }
 
-  async onPressMap(res) {
+  onDidFinishLoadingMap = () => {
+    // this.cluster.load(PostalData.features)
+    console.log('onDidFinishLoadingMap')
+  }
+
+  onRegionDidChange = (location) => {
+    console.log('onRegionDidChange : ', location)
+
+    const { zoomLevel } = location.properties
+    console.log('Math.floor(zoomLevel) : ', Math.floor(zoomLevel))
+    console.log('this.currentZoomLevel : ', this.currentZoomLevel)
+
+    if (Math.floor(zoomLevel) !== this.currentZoomLevel) {
+      this.updateClusters(Math.floor(zoomLevel))
+    }
+  }
+
+  updateClusters = (zoomLevel) => {
+
+    this.currentZoomLevel = zoomLevel  // set new current zoom level
+
+    console.log('updateClusters')
+    // console.log('Math.floor(zoomLevel) : ', Math.floor(zoomLevel))
+
+    let clusterData = this.cluster.getClusters(WORLD_BOUND, zoomLevel)
+    // console.log('clusterData : ', clusterData)
+  }
+
+  onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['clusteredPoints', 'singlePoint'])
       .then((query) => {
         console.log('query : ', query.features)
@@ -50,18 +84,18 @@ export default class FullMapView extends Component {
 
       })
 
-    const visibleBounds = await this._map.getVisibleBounds();
-    console.log('visibleBounds : ', visibleBounds)
+    // const visibleBounds = await this._map.getVisibleBounds();
+    // console.log('visibleBounds : ', visibleBounds)
 
-    const bbox = [...visibleBounds[1], ...visibleBounds[0]]
+    // const bbox = [...visibleBounds[1], ...visibleBounds[0]]
 
-    console.log('bbox : ', bbox)
+    // console.log('bbox : ', bbox)
 
-    const clusterData = this.cluster.getClusters(bbox, 5)
-    console.log('clusterData : ', clusterData)
+    // const clusterData = this.cluster.getClusters(bbox, 5)
+    // console.log('clusterData : ', clusterData)
 
-    const clusterChild = this.cluster.getChildren(7430)
-    console.log('clusterChild : ', clusterChild)
+    // const clusterChild = this.cluster.getChildren(7430)
+    // console.log('clusterChild : ', clusterChild)
   }
 
   setSelectedFeature = (selectedFeature) => {
@@ -80,15 +114,16 @@ export default class FullMapView extends Component {
           styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
           //centerCoordinate={[-77.12911152370515, 38.79930767201779]}
-          zoomLevel={5}
+          zoomLevel={INITIAL_ZOOM_LEVEL}
           logoEnabled={false}
           onPress={this.onPressMap}
           pitchEnabled={false}
-          onDidFinishLoadingMap={this.onLoadMap}
+          onDidFinishLoadingMap={this.onDidFinishLoadingMap}
+          onRegionDidChange={this.onRegionDidChange}
         >
           <MapboxGL.ShapeSource
             id={'postal'}
-            shape={PostalData}
+            shape={this.state.clusterData}
             cluster={true}
             clusterRadius={CLUSTER_RADIUS}
           >
