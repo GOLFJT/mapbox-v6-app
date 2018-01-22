@@ -70,59 +70,14 @@ export default class FullMapView extends Component {
     })
   }
 
-  displayInfoBox = () => {
-    const { selectedFeature } = this.state
-    console.log('selectedFeature : ', selectedFeature)
-    if (selectedFeature !== null) {
-      const { coordinates } = selectedFeature.geometry;
-      const { name } = selectedFeature.properties;
-      return (
-        <MapboxGL.PointAnnotation
-          id={'selected-feature'}
-          coordinate={coordinates}
-          anchor={{ x: 0.5, y: 2 }}
-        >
-          <TouchableOpacity style={styles.infoContainer} >
-            <View style={styles.infoBox} >
-              <Text>{name}</Text>
-            </View>
-            <View style={styles.arrowDown} />
-          </TouchableOpacity>
-        </MapboxGL.PointAnnotation>
-      )
-    }
-    return null
-  }
-
-  renderAnnotation = () => {
-    const { selectedFeature } = this.state
-    console.log('selectedFeature : ', selectedFeature)
-    if (selectedFeature !== null) {
-      const { coordinates } = selectedFeature.geometry;
-      const { name } = selectedFeature.properties;
-      return (
-        <MapboxGL.PointAnnotation
-          id={'selected-feature'}
-          title={name}
-          coordinate={coordinates}
-          selected={true}
-        >
-          <View style={{height:0,}} />
-          <MapboxGL.Callout title={name} />
-        </MapboxGL.PointAnnotation>
-      )
-    }
-    return null
-  }
-
   render() {
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
           ref={(ref) => this._map = ref}
           style={styles.container}
-          styleURL={'http://172.16.16.23:1111/getMapStyle'}
-          //styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
+          //styleURL={'http://172.16.16.33:1111/getMapStyle'}
+          styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
           //centerCoordinate={[-77.12911152370515, 38.79930767201779]}
           zoomLevel={5}
