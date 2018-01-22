@@ -28,7 +28,7 @@ export default class FullMapView extends Component {
   constructor(props) {
     super(props)
 
-    this.currentZoomLevel = INITIAL_ZOOM_LEVEL
+    this.currentZoomLevel = -1
   }
 
   componentDidMount() {
@@ -37,14 +37,9 @@ export default class FullMapView extends Component {
     })
 
     this.cluster.load(PostalData.features)
-
-    this.setState({
-      clusterData: PostalData
-    })
   }
 
   onDidFinishLoadingMap = () => {
-    // this.cluster.load(PostalData.features)
     console.log('onDidFinishLoadingMap')
   }
 
@@ -52,8 +47,6 @@ export default class FullMapView extends Component {
     console.log('onRegionDidChange : ', location)
 
     const { zoomLevel } = location.properties
-    console.log('Math.floor(zoomLevel) : ', Math.floor(zoomLevel))
-    console.log('this.currentZoomLevel : ', this.currentZoomLevel)
 
     if (Math.floor(zoomLevel) !== this.currentZoomLevel) {
       this.updateClusters(Math.floor(zoomLevel))
@@ -61,14 +54,14 @@ export default class FullMapView extends Component {
   }
 
   updateClusters = (zoomLevel) => {
+    console.log('UPDATE CLUSTERS')
 
     this.currentZoomLevel = zoomLevel  // set new current zoom level
 
-    console.log('updateClusters')
-    // console.log('Math.floor(zoomLevel) : ', Math.floor(zoomLevel))
-
-    let clusterData = this.cluster.getClusters(WORLD_BOUND, zoomLevel)
-    // console.log('clusterData : ', clusterData)
+    let clusterData = turf.featureCollection(this.cluster.getClusters(WORLD_BOUND, zoomLevel))
+    this.setState({
+      clusterData
+    })
   }
 
   onPressMap = (res) => {
@@ -83,19 +76,6 @@ export default class FullMapView extends Component {
         }
 
       })
-
-    // const visibleBounds = await this._map.getVisibleBounds();
-    // console.log('visibleBounds : ', visibleBounds)
-
-    // const bbox = [...visibleBounds[1], ...visibleBounds[0]]
-
-    // console.log('bbox : ', bbox)
-
-    // const clusterData = this.cluster.getClusters(bbox, 5)
-    // console.log('clusterData : ', clusterData)
-
-    // const clusterChild = this.cluster.getChildren(7430)
-    // console.log('clusterChild : ', clusterChild)
   }
 
   setSelectedFeature = (selectedFeature) => {
@@ -113,7 +93,6 @@ export default class FullMapView extends Component {
           //styleURL={'http://172.16.16.33:1111/getMapStyle'}
           styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
-          //centerCoordinate={[-77.12911152370515, 38.79930767201779]}
           zoomLevel={INITIAL_ZOOM_LEVEL}
           logoEnabled={false}
           onPress={this.onPressMap}
