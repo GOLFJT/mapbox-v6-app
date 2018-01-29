@@ -94,8 +94,7 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-          url={'http://172.16.16.23:1111/getTileJSON'}
-          //url={'https://api.tiles.mapbox.com/v3/mapbox.geography-class.json'}
+            url={'http://localhost:1111/getTileJSON'}
           >
             <MapboxGL.SymbolLayer
               id={'tn-jobthai-company'}
