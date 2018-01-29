@@ -94,21 +94,13 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            url={'http://localhost:1111/getTileJSON'}
+            url={'http://172.16.16.23:1111/getTileJSON'}
           >
-            <MapboxGL.SymbolLayer
-              id={'tn-jobthai-company'}
+            <MapboxGL.CircleLayer
+              id={'all-point'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
-              style={symbolStyle.company}
-              filter={["==", "type", "company"]}
-            />
-            <MapboxGL.SymbolLayer
-              id={'tn-jobthai-jobs'}
-              sourceID={'jobthai'}
-              sourceLayerID={'geojsonLayer'}
-              style={symbolStyle.company}
-              filter={["==", "type", "job"]}
+              style={circleStyle.point}
             />
           </MapboxGL.VectorSource>
           {this.displayInfoBox()}
@@ -163,5 +155,14 @@ const symbolStyle = MapboxGL.StyleSheet.create({
     textAnchor: MapboxGL.TextAnchor.Top,
     iconImage: 'tn-Comm_Comp-12',
     visibility: 'visible',
-  }
+  },
 })
+
+const circleStyle = MapboxGL.StyleSheet.create({
+  point: {
+    circleColor: 'pink',
+    circleRadius: 8,
+    circleStrokeColor: 'white',
+    circleStrokeWidth: 2,
+  },
+});
