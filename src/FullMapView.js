@@ -94,7 +94,7 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            url={'http://172.16.16.23:1111/getTileJSON'}
+            url={'http://172.16.16.12:1111/getTileJSON'}
           >
             <MapboxGL.CircleLayer
               id={'all-point'}
@@ -160,7 +160,7 @@ const symbolStyle = MapboxGL.StyleSheet.create({
 
 const circleStyle = MapboxGL.StyleSheet.create({
   point: {
-    circleColor: 'pink',
+    circleColor: 'lightcoral',
     circleRadius: 8,
     circleStrokeColor: 'white',
     circleStrokeWidth: 2,
