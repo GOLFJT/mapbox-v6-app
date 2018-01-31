@@ -15,13 +15,16 @@ const FILTER_BKK = 'BKK'
 const FILTER_SPK = 'SPK'
 const FILTER_CNX = 'CNX'
 
+const LIMIT = 10
+
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
     filter: undefined,
+    allpointOpacity: 1,
   }
   onPressMap = (res) => {
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
         console.log('query : ', query.features)
         // if (query.features.length > 0) {
@@ -42,7 +45,6 @@ export default class FullMapView extends Component {
 
   displayInfoBox = () => {
     const { selectedFeature } = this.state
-    console.log('selectedFeature : ', selectedFeature)
     if (selectedFeature !== null) {
       const { coordinates } = selectedFeature.geometry;
       const { name } = selectedFeature.properties;
@@ -66,7 +68,6 @@ export default class FullMapView extends Component {
 
   onPressFilterButton = (filter) => {
     if (filter === FILTER_ALL) {
-      console.log('filter : ', filter)
       this.setState({
         filter: undefined
       })
@@ -83,10 +84,48 @@ export default class FullMapView extends Component {
           province = 'เชียงใหม่'
           break
       }
+
       this.setState({
         filter: ["==", "province", province]
       })
     }
+    this.animatePoint()
+  }
+
+  animatePoint = () => {
+    const callback = (opacity) => this.setState({
+      allpointOpacity: opacity
+    })
+
+    this.animatePointFadeOut(callback)
+
+    // this.setState({
+    //   allpointOpacity: this.fadeOutOpacity
+    // })
+  }
+
+  animatePointFadeIn = (callback) => {
+    let i = 0
+
+    this.fadeInInterval = setInterval(() => {
+      if (i === LIMIT) {
+        clearInterval(this.fadeInInterval)
+      }
+      callback(i/10)
+      i++
+    }, 100)
+  }
+
+  animatePointFadeOut = (callback) => {
+    let i = LIMIT
+
+    this.fadeOutInterval = setInterval(() => {
+      if (i === 0) {
+        clearInterval(this.fadeOutInterval)
+      }
+      callback(i/10)
+      i--
+    }, 100)
   }
 
   renderFilterButton = (options) => {
@@ -99,7 +138,7 @@ export default class FullMapView extends Component {
   }
 
   render() {
-    console.log('state filter : ', this.state.filter)
+    const { allpointOpacity } = this.state
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -120,7 +159,7 @@ export default class FullMapView extends Component {
               id={'all-point'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
-              style={[circleStyle.point, { visibility: this.state.filter ? 'none' : 'visible'}]}
+              style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity}]}
             />
             {
               this.state.filter &&
@@ -129,7 +168,7 @@ export default class FullMapView extends Component {
                   id={'filtered-point'}
                   sourceID={'jobthai'}
                   sourceLayerID={'geojsonLayer'}
-                  style={circleStyle.filteredPoint}
+                  style={[circleStyle.filteredPoint]}
                   filter={this.state.filter}
                 />
               )
