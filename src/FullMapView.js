@@ -12,6 +12,8 @@ MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8z
 
 const FILTER_ALL = 'All'
 const FILTER_BKK = 'BKK'
+const FILTER_SPK = 'SPK'
+const FILTER_CNX = 'CNX'
 
 export default class FullMapView extends Component {
   state = {
@@ -74,6 +76,12 @@ export default class FullMapView extends Component {
         case FILTER_BKK:
           province = 'กรุงเทพมหานคร'
           break
+        case FILTER_SPK:
+          province = 'สมุทรปราการ'
+          break
+        case FILTER_CNX:
+          province = 'เชียงใหม่'
+          break
       }
       this.setState({
         filter: ["==", "province", province]
@@ -126,14 +134,13 @@ export default class FullMapView extends Component {
                 />
               )
             }
-            
-            
-            
           </MapboxGL.VectorSource>
           {this.displayInfoBox()}
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
+        {this.renderFilterButton({ text: FILTER_SPK, left: 140})}
+        {this.renderFilterButton({ text: FILTER_CNX, left: 200})}
       </View>
     );
   }
