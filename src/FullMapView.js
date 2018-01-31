@@ -10,10 +10,13 @@ import MapboxGL from '@mapbox/react-native-mapbox-gl';
 
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
+const FILTER_ALL = 'All'
+const FILTER_BKK = 'BKK'
+
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
-    filter: [],
+    filter: undefined,
   }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
@@ -59,7 +62,36 @@ export default class FullMapView extends Component {
     return null
   }
 
+  onPressFilterButton = (filter) => {
+    if (filter === FILTER_ALL) {
+      console.log('filter : ', filter)
+      this.setState({
+        filter: undefined
+      })
+    } else {
+      let province = ""
+      switch (filter) {
+        case FILTER_BKK:
+          province = 'กรุงเทพมหานคร'
+          break
+      }
+      this.setState({
+        filter: ["==", "province", province]
+      })
+    }
+  }
+
+  renderFilterButton = (options) => {
+    let { text, left } = options
+    return(
+      <TouchableOpacity style={[styles.filterButton, {left}]} onPress={() => this.onPressFilterButton(text)} >
+        <Text>{text}</Text>
+      </TouchableOpacity>
+    )
+  }
+
   render() {
+    console.log('state filter : ', this.state.filter)
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -80,12 +112,28 @@ export default class FullMapView extends Component {
               id={'all-point'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
-              style={circleStyle.point}
-              filter={this.state.filter}
+              style={[circleStyle.point, { visibility: this.state.filter ? 'none' : 'visible'}]}
             />
+            {
+              this.state.filter &&
+              (
+                <MapboxGL.CircleLayer
+                  id={'filtered-point'}
+                  sourceID={'jobthai'}
+                  sourceLayerID={'geojsonLayer'}
+                  style={circleStyle.filteredPoint}
+                  filter={this.state.filter}
+                />
+              )
+            }
+            
+            
+            
           </MapboxGL.VectorSource>
           {this.displayInfoBox()}
         </MapboxGL.MapView>
+        {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
+        {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
       </View>
     );
   }
@@ -117,6 +165,19 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderLeftColor: 'transparent',
   },
+
+  filterButton: {
+    position: 'absolute',
+    top: 20,
+    backgroundColor: 'steelblue',
+    borderColor: 'whitesmoke',
+    borderWidth: 1,
+    borderRadius: 10,
+    width: 50,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 })
 
 const symbolStyle = MapboxGL.StyleSheet.create({
@@ -146,4 +207,11 @@ const circleStyle = MapboxGL.StyleSheet.create({
     circleStrokeColor: 'white',
     circleStrokeWidth: 2,
   },
+
+  filteredPoint: {
+    circleColor: 'teal',
+    circleRadius: 8,
+    circleStrokeColor: 'white',
+    circleStrokeWidth: 2,
+  }
 });
