@@ -13,6 +13,7 @@ MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8z
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
+    filter: [],
   }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['tn-jobthai-company', 'tn-jobthai-jobs'])
@@ -58,27 +59,6 @@ export default class FullMapView extends Component {
     return null
   }
 
-  renderAnnotation = () => {
-    const { selectedFeature } = this.state
-    console.log('selectedFeature : ', selectedFeature)
-    if (selectedFeature !== null) {
-      const { coordinates } = selectedFeature.geometry;
-      const { name } = selectedFeature.properties;
-      return (
-        <MapboxGL.PointAnnotation
-          id={'selected-feature'}
-          title={name}
-          coordinate={coordinates}
-          selected={true}
-        >
-          <View style={{height:0,}} />
-          <MapboxGL.Callout title={name} />
-        </MapboxGL.PointAnnotation>
-      )
-    }
-    return null
-  }
-
   render() {
     return (
       <View style={styles.container}>
@@ -101,6 +81,7 @@ export default class FullMapView extends Component {
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
               style={circleStyle.point}
+              filter={}
             />
           </MapboxGL.VectorSource>
           {this.displayInfoBox()}
