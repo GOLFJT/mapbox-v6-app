@@ -67,10 +67,14 @@ export default class FullMapView extends Component {
   }
 
   onPressFilterButton = (filter) => {
+    const callback = () => {
+      this.animatePoint()
+    }
+
     if (filter === FILTER_ALL) {
       this.setState({
         filter: undefined
-      })
+      }, callback)
     } else {
       let province = ""
       switch (filter) {
@@ -87,21 +91,24 @@ export default class FullMapView extends Component {
 
       this.setState({
         filter: ["==", "province", province]
-      })
+      }, callback)
     }
-    this.animatePoint()
   }
 
   animatePoint = () => {
+    
     const callback = (opacity) => this.setState({
       allpointOpacity: opacity
     })
 
-    this.animatePointFadeOut(callback)
+    if(this.state.filter) {
+      this.animatePointFadeOut(callback)
+    } else {
+      this.animatePointFadeIn(callback)
+    }
 
-    // this.setState({
-    //   allpointOpacity: this.fadeOutOpacity
-    // })
+    
+
   }
 
   animatePointFadeIn = (callback) => {
