@@ -101,9 +101,9 @@ export default class FullMapView extends Component {
       allpointOpacity: opacity
     })
 
-    if(this.state.filter) {
+    if(this.state.filter && (this.state.allpointOpacity === 1)) {
       this.animatePointFadeOut(callback)
-    } else {
+    } else if(!this.state.filter && (this.state.allpointOpacity === 0)) {
       this.animatePointFadeIn(callback)
     }
 
