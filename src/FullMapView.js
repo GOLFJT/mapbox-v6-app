@@ -81,7 +81,7 @@ export default class FullMapView extends Component {
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
               style={circleStyle.point}
-              filter={}
+              filter={this.state.filter}
             />
           </MapboxGL.VectorSource>
           {this.displayInfoBox()}
