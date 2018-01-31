@@ -16,6 +16,7 @@ const FILTER_SPK = 'SPK'
 const FILTER_CNX = 'CNX'
 
 const LIMIT = 10
+const INTERVAL_TIME = 50
 
 export default class FullMapView extends Component {
   state = {
@@ -107,8 +108,6 @@ export default class FullMapView extends Component {
       this.animatePointFadeIn(callback)
     }
 
-    
-
   }
 
   animatePointFadeIn = (callback) => {
@@ -120,7 +119,7 @@ export default class FullMapView extends Component {
       }
       callback(i/10)
       i++
-    }, 100)
+    }, INTERVAL_TIME)
   }
 
   animatePointFadeOut = (callback) => {
@@ -132,7 +131,7 @@ export default class FullMapView extends Component {
       }
       callback(i/10)
       i--
-    }, 100)
+    }, INTERVAL_TIME)
   }
 
   renderFilterButton = (options) => {
