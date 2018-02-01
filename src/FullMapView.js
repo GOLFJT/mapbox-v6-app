@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
+import pinIcon from './assets/images/pin.png'
 
 const MAP_ACCESS_TOKEN = 'pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA'
 
@@ -35,7 +36,7 @@ export default class FullMapView extends Component {
     super(props)
 
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
-    this.onTakseSnapshot = this.onTakseSnapshot.bind(this)
+    this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
   }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
@@ -50,7 +51,7 @@ export default class FullMapView extends Component {
         }
 
         // this.onTakeSnapMap()
-        this.onTakseSnapshot()
+        this.onTakeSnapshot()
 
       })
 
@@ -146,14 +147,19 @@ export default class FullMapView extends Component {
       <View style={{ flex:1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
         {
           snapshotURI &&
-          <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
+          <View>
+            <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
+            <Image source={pinIcon} style={{ width: 20, height: 30, position: 'absolute', top: 70, left: 90, resizeMode: 'contain' }} />
+          </View>
+          
         }
       </View>
     )
   }
 
   // DOING:
-  async onTakseSnapshot () {
+  async onTakeSnapshot () {
+  // onTakeSnapshot () {
     const { selectedFeature } = this.state
 
     if (selectedFeature) {
@@ -162,7 +168,7 @@ export default class FullMapView extends Component {
         centerCoordinate: coordinates,
         width: 200,
         height: 200,
-        zoomLevel: 10,
+        zoomLevel: 15,
         // pitch: 30,
         // heading: 20,
         // styleURL: MapboxGL.StyleURL.Dark,
@@ -178,8 +184,8 @@ export default class FullMapView extends Component {
       // });
 
       this.setSnapshotURI(uri)
-      // const newURI = `https://api.mapbox.com/styles/v1/mapbox/light-v9/static/pin-l-suitcase+ff2f92(${coordinates[0]},${coordinates[1]})/${coordinates[0]},${coordinates[1]},15,0/200x200@2x?access_token=${MAP_ACCESS_TOKEN}&attribution=false&logo=false`
-      // this.setSnapshotURI('https://api.mapbox.com/styles/v1/mapbox/light-v9/static/pin-l-suitcase+ff2f92(100.5264821,13.7287357)/100.5264821,13.7287357,15,0/600x300@2x?access_token=pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA&attribution=false&logo=false')
+      // const newURI = `https://api.mapbox.com/v4/mapbox.light/pin-l-suitcase+ff2f92(${coordinates[0]},${coordinates[1]})/${coordinates[0]},${coordinates[1]},15/200x200.png?access_token=${MAP_ACCESS_TOKEN}`
+      // console.log('newURI : ', newURI)
       // this.setSnapshotURI(newURI)
     }
 
