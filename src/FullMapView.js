@@ -3,7 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
-  Images,
+  Image,
   TouchableOpacity,
 } from 'react-native';
 
@@ -156,8 +156,9 @@ export default class FullMapView extends Component {
   // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
+    console.log('snapshotURI : ', snapshotURI)
     return(
-      <View style={{ flex:1, backgroundColor: 'rosybrown' }}>
+      <View style={{ flex:1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
         {
           snapshotURI &&
           <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
@@ -185,7 +186,14 @@ export default class FullMapView extends Component {
 
   async onTakeSnapMap () {
     const uri = await this._map.takeSnap(false);
-    console.log('onTakeSnapMap uri : ', uri)
+    // console.log('onTakeSnapMap uri : ', uri)
+    this.setSnapshotURI(uri)
+  }
+
+  setSnapshotURI = (uri) => {
+    this.setState({
+      snapshotURI: uri,
+    })
   }
 
   render() {
@@ -204,7 +212,7 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            url={'http://172.16.16.12:1111/getTileJSON'}
+            url={'http://172.16.16.14:1111/getTileJSON'}
           >
             <MapboxGL.CircleLayer
               id={'all-point'}
