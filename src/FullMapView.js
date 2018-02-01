@@ -51,6 +51,8 @@ export default class FullMapView extends Component {
         this.onTakseSnapshot()
 
       })
+
+      
   }
 
   setSelectedFeature = (selectedFeature) => {
@@ -165,6 +167,13 @@ export default class FullMapView extends Component {
         styleURL: MAP_STYLE_URL,
         // writeToDisk: true, // creates a temp file
       })
+
+      // const uri = await MapboxGL.snapshotManager.takeSnap({
+      //   bounds: [[100.6601460314522, 13.875034454766947], [100.402653968545, 13.578538331624344]],
+      //   width: 200,
+      //   height: 200,
+      //   styleURL: MAP_STYLE_URL,
+      // });
 
       this.setSnapshotURI(uri)
     }
@@ -333,7 +342,7 @@ const circleStyle = MapboxGL.StyleSheet.create({
 
   selectedPoint: {
     ...CIRCLE_POINT_BASE,
-    circleColor: 'crimson',
+    circleColor: 'lightseagreen',
     circleStrokeColor: 'white',
     circleRadius: 15,
   },
