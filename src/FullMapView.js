@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
+  Images,
   TouchableOpacity,
 } from 'react-native';
 
@@ -23,6 +24,7 @@ export default class FullMapView extends Component {
     selectedFeature: null,
     filter: undefined,
     allpointOpacity: 1,
+    snapshotURI: undefined,
   }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
@@ -143,13 +145,26 @@ export default class FullMapView extends Component {
     )
   }
 
+  // DOING:
+  renderSnapshotImage = () => {
+    const { snapshotURI } = this.state
+    return(
+      <View style={{ flex:1, backgroundColor: 'whitesmoke' }}>
+        {
+          snapshotURI &&
+          <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
+        }
+      </View>
+    )
+  }
+
   render() {
     const { allpointOpacity } = this.state
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
           ref={(ref) => this._map = ref}
-          style={styles.container}
+          style={styles.mapContainer}
           //styleURL={'http://172.16.16.23:1111/getMapStyle'}
           styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
           centerCoordinate={[100.5314, 13.7270]}
@@ -186,6 +201,7 @@ export default class FullMapView extends Component {
         {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
         {this.renderFilterButton({ text: FILTER_SPK, left: 140})}
         {this.renderFilterButton({ text: FILTER_CNX, left: 200})}
+        {this.renderSnapshotImage()}
       </View>
     );
   }
@@ -196,6 +212,10 @@ const INFO_BOX_COLOR = 'teal';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+
+  mapContainer: {
+    flex: 2,
   },
 
   infoContainer: {
