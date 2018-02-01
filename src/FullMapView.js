@@ -9,7 +9,9 @@ import {
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 
-MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
+const MAP_ACCESS_TOKEN = 'pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA'
+
+MapboxGL.setAccessToken(MAP_ACCESS_TOKEN);
 
 const MAP_STYLE_URL = 'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'
 
@@ -176,6 +178,9 @@ export default class FullMapView extends Component {
       // });
 
       this.setSnapshotURI(uri)
+      // const newURI = `https://api.mapbox.com/styles/v1/mapbox/light-v9/static/pin-l-suitcase+ff2f92(${coordinates[0]},${coordinates[1]})/${coordinates[0]},${coordinates[1]},15,0/200x200@2x?access_token=${MAP_ACCESS_TOKEN}&attribution=false&logo=false`
+      // this.setSnapshotURI('https://api.mapbox.com/styles/v1/mapbox/light-v9/static/pin-l-suitcase+ff2f92(100.5264821,13.7287357)/100.5264821,13.7287357,15,0/600x300@2x?access_token=pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA&attribution=false&logo=false')
+      // this.setSnapshotURI(newURI)
     }
 
     console.log('selected Feature : ', selectedFeature)
