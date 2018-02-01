@@ -59,29 +59,6 @@ export default class FullMapView extends Component {
     })
   }
 
-  displayInfoBox = () => {
-    const { selectedFeature } = this.state
-    if (selectedFeature !== null) {
-      const { coordinates } = selectedFeature.geometry;
-      const { name } = selectedFeature.properties;
-      return (
-        <MapboxGL.PointAnnotation
-          id={'selected-feature'}
-          coordinate={coordinates}
-          anchor={{ x: 0.5, y: 2 }}
-        >
-          <TouchableOpacity style={styles.infoContainer} >
-            <View style={styles.infoBox} >
-              <Text>{name}</Text>
-            </View>
-            <View style={styles.arrowDown} />
-          </TouchableOpacity>
-        </MapboxGL.PointAnnotation>
-      )
-    }
-    return null
-  }
-
   onPressFilterButton = (filter) => {
     const callback = () => {
       this.animatePoint()
@@ -246,7 +223,6 @@ export default class FullMapView extends Component {
               )
             }
           </MapboxGL.VectorSource>
-          {this.displayInfoBox()}
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
