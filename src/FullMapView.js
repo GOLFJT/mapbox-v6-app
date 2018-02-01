@@ -11,6 +11,8 @@ import MapboxGL from '@mapbox/react-native-mapbox-gl';
 
 MapboxGL.setAccessToken('pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA');
 
+const MAP_STYLE_URL = 'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'
+
 const FILTER_ALL = 'All'
 const FILTER_BKK = 'BKK'
 const FILTER_SPK = 'SPK'
@@ -31,19 +33,22 @@ export default class FullMapView extends Component {
     super(props)
 
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
+    this.onTakseSnapshot = this.onTakseSnapshot.bind(this)
   }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
         console.log('query : ', query.features)
-        // if (query.features.length > 0) {
-        //   const selectedFeature = query.features[0];
-        //   this.setSelectedFeature(selectedFeature)
-        // } else {
-        //   this.setSelectedFeature(null)
-        // }
+        if (query.features.length > 0) {
+          const selectedFeature = query.features[0];
+          this.setSelectedFeature(selectedFeature)
+        } else {
+          this.setSelectedFeature(null)
+          this.setSnapshotURI(null)
+        }
 
-        this.onTakeSnapMap()
+        // this.onTakeSnapMap()
+        this.onTakseSnapshot()
 
       })
   }
@@ -156,7 +161,6 @@ export default class FullMapView extends Component {
   // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
-    console.log('snapshotURI : ', snapshotURI)
     return(
       <View style={{ flex:1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
         {
@@ -168,25 +172,34 @@ export default class FullMapView extends Component {
   }
 
   // DOING:
-  // async onTakseSnapshot () {
-  //   console.log('onTakseSnapshot')
-  //   const uri = await MapboxGL.snapshotManager.takeSnap({
-  //     centerCoordinate: [-74.126410, 40.797968],
-  //     width: 200,
-  //     height: 200,
-  //     zoomLevel: 12,
-  //     // pitch: 30,
-  //     // heading: 20,
-  //     styleURL: MapboxGL.StyleURL.Dark,
-  //     // writeToDisk: true, // creates a temp file
-  //   })
+  async onTakseSnapshot () {
+    const { selectedFeature } = this.state
 
-  //   console.log('onTakseSnapshot uri : ', uri)
-  // }
+    if (selectedFeature) {
+      const { coordinates } = selectedFeature.geometry
+      const uri = await MapboxGL.snapshotManager.takeSnap({
+        centerCoordinate: coordinates,
+        width: 200,
+        height: 200,
+        zoomLevel: 10,
+        // pitch: 30,
+        // heading: 20,
+        // styleURL: MapboxGL.StyleURL.Dark,
+        styleURL: MAP_STYLE_URL,
+        // writeToDisk: true, // creates a temp file
+      })
+
+      this.setSnapshotURI(uri)
+    }
+
+    console.log('selected Feature : ', selectedFeature)
+    
+
+    
+  }
 
   async onTakeSnapMap () {
     const uri = await this._map.takeSnap(false);
-    // console.log('onTakeSnapMap uri : ', uri)
     this.setSnapshotURI(uri)
   }
 
@@ -204,7 +217,7 @@ export default class FullMapView extends Component {
           ref={(ref) => this._map = ref}
           style={styles.mapContainer}
           //styleURL={'http://172.16.16.23:1111/getMapStyle'}
-          styleURL={'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'}
+          styleURL={MAP_STYLE_URL}
           centerCoordinate={[100.5314, 13.7270]}
           zoomLevel={10}
           logoEnabled={false}
