@@ -26,6 +26,12 @@ export default class FullMapView extends Component {
     allpointOpacity: 1,
     snapshotURI: undefined,
   }
+
+  constructor(props) {
+    super(props)
+
+    this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
+  }
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
@@ -36,6 +42,8 @@ export default class FullMapView extends Component {
         // } else {
         //   this.setSelectedFeature(null)
         // }
+
+        this.onTakeSnapMap()
 
       })
   }
@@ -149,13 +157,35 @@ export default class FullMapView extends Component {
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
     return(
-      <View style={{ flex:1, backgroundColor: 'whitesmoke' }}>
+      <View style={{ flex:1, backgroundColor: 'rosybrown' }}>
         {
           snapshotURI &&
           <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
         }
       </View>
     )
+  }
+
+  // DOING:
+  // async onTakseSnapshot () {
+  //   console.log('onTakseSnapshot')
+  //   const uri = await MapboxGL.snapshotManager.takeSnap({
+  //     centerCoordinate: [-74.126410, 40.797968],
+  //     width: 200,
+  //     height: 200,
+  //     zoomLevel: 12,
+  //     // pitch: 30,
+  //     // heading: 20,
+  //     styleURL: MapboxGL.StyleURL.Dark,
+  //     // writeToDisk: true, // creates a temp file
+  //   })
+
+  //   console.log('onTakseSnapshot uri : ', uri)
+  // }
+
+  async onTakeSnapMap () {
+    const uri = await this._map.takeSnap(false);
+    console.log('onTakeSnapMap uri : ', uri)
   }
 
   render() {
