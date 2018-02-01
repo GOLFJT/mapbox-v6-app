@@ -187,7 +187,7 @@ export default class FullMapView extends Component {
   }
 
   render() {
-    const { allpointOpacity } = this.state
+    const { allpointOpacity, filter, selectedFeature } = this.state
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -211,18 +211,32 @@ export default class FullMapView extends Component {
               style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity}]}
             />
             {
-              this.state.filter &&
+              filter &&
               (
                 <MapboxGL.CircleLayer
                   id={'filtered-point'}
                   sourceID={'jobthai'}
                   sourceLayerID={'geojsonLayer'}
                   style={[circleStyle.filteredPoint]}
-                  filter={this.state.filter}
+                  filter={filter}
                 />
               )
             }
           </MapboxGL.VectorSource>
+          {
+            selectedFeature &&
+            <MapboxGL.ShapeSource
+              id={'selected-source'}
+              shape={selectedFeature}
+            >
+              <MapboxGL.CircleLayer
+                id={'selected-point'}
+                sourceID={'selected-source'}
+                style={[circleStyle.selectedPoint]}
+              />
+            </MapboxGL.ShapeSource>
+          }
+          
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
@@ -299,18 +313,28 @@ const symbolStyle = MapboxGL.StyleSheet.create({
   },
 })
 
+const CIRCLE_POINT_BASE = {
+  circleRadius: 8,
+  circleStrokeWidth: 2,
+}
+
 const circleStyle = MapboxGL.StyleSheet.create({
   point: {
+    ...CIRCLE_POINT_BASE,
     circleColor: 'lightcoral',
-    circleRadius: 8,
     circleStrokeColor: 'white',
-    circleStrokeWidth: 2,
   },
 
   filteredPoint: {
+    ...CIRCLE_POINT_BASE,
     circleColor: 'teal',
-    circleRadius: 8,
     circleStrokeColor: 'white',
-    circleStrokeWidth: 2,
-  }
+  },
+
+  selectedPoint: {
+    ...CIRCLE_POINT_BASE,
+    circleColor: 'crimson',
+    circleStrokeColor: 'white',
+    circleRadius: 15,
+  },
 });
