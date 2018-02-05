@@ -213,6 +213,8 @@ export default class FullMapView extends Component {
         <MapboxGL.MapView
           ref={(ref) => this._map = ref}
           style={styles.mapContainer}
+          showUserLocation={true}
+          //userTrackingMode={MapboxGL.UserTrackingModes.Follow}
           //styleURL={'http://172.16.16.23:1111/getMapStyle'}
           styleURL={MAP_STYLE_URL}
           centerCoordinate={[100.5314, 13.7270]}
