@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
-import buffer from '@turf/buffer'
+import circle from '@turf/circle'
 import turf from '@turf/helpers'
 import pinIcon from './assets/images/pin.png'
 
@@ -197,22 +197,14 @@ export default class FullMapView extends Component {
 
   // DOINGG:
   renderUserCurrentLocationRadius = () => {
-    // const userRadius = buffer()
-    // return(
-    //   <MapboxGL.ShapeSource id={'nearme-radius'} shape={}>
-    //     <MapboxGL.FillLayer/>
-    //   </MapboxGL.ShapeSource>
-    // )
-    
     const { userLocation } = this.state
     if (userLocation) {
-      const userPoint = turf.point(userLocation)
-      const buffered = buffer(userPoint, NEARME_RADIUS)
+      const circleRadius = circle(userLocation, NEARME_RADIUS)
 
-      console.log('buffered : ', buffered)
+      console.log('circleRadius : ', circleRadius)
 
       return(
-        <MapboxGL.ShapeSource id={'nearme-radius'} shape={buffered}>
+        <MapboxGL.ShapeSource id={'nearme-radius'} shape={circleRadius}>
           <MapboxGL.FillLayer id={'nearme-layer'} sourceID={'nearme-radius'} style={fillStyle.radius} />
         </MapboxGL.ShapeSource>
       )
