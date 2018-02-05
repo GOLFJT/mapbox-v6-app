@@ -35,6 +35,7 @@ export default class FullMapView extends Component {
     allpointOpacity: 1,
     snapshotURI: undefined,
     userLocation: [100.5018, 13.7563],  // set initial as BKK
+    circleRadius: undefined,
   }
 
   constructor(props) {
@@ -57,6 +58,7 @@ export default class FullMapView extends Component {
     // request location permission
     navigator.geolocation.requestAuthorization()
     this.watchUserLocation()
+
   }
 
   // DOINGG:
@@ -72,6 +74,8 @@ export default class FullMapView extends Component {
         const { coords } = position
         this.setState({
           userLocation: [coords.longitude, coords.latitude]
+        }, () => {
+          this.createCircleRadius()
         })
       },
       (error) => {
@@ -200,13 +204,19 @@ export default class FullMapView extends Component {
   }
 
   // DOINGG:
-  renderUserCurrentLocationRadius = () => {
+  createCircleRadius = () => {
     const { userLocation } = this.state
-    if (userLocation) {
-      const circleRadius = circle(userLocation, NEARME_RADIUS)
+    const circleRadius = circle(userLocation, NEARME_RADIUS)
+    console.log('circleRadius : ', circleRadius)
+    this.setState({
+      circleRadius
+    })
+  }
 
-      console.log('circleRadius : ', circleRadius)
-
+  // DOINGG:
+  renderUserCurrentLocationRadius = () => {
+    const { circleRadius } = this.state
+    if (circleRadius) {
       return(
         <MapboxGL.ShapeSource id={'nearme-radius'} shape={circleRadius}>
           <MapboxGL.FillLayer id={'nearme-layer'} sourceID={'nearme-radius'} style={fillStyle.radius} />
@@ -285,7 +295,8 @@ export default class FullMapView extends Component {
   }
 
   render() {
-    const { allpointOpacity, filter, selectedFeature, userLocation } = this.state
+    const { allpointOpacity, filter, selectedFeature, userLocation, circleRadius } = this.state
+
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -311,6 +322,7 @@ export default class FullMapView extends Component {
               id={'all-point'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
+              //aboveLayerID={aboveNearMeLayer}
               style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity}]}
             />
             {
@@ -320,6 +332,7 @@ export default class FullMapView extends Component {
                   id={'filtered-point'}
                   sourceID={'jobthai'}
                   sourceLayerID={'geojsonLayer'}
+                  //aboveLayerID={aboveNearMeLayer}
                   style={[circleStyle.filteredPoint]}
                   filter={filter}
                 />
@@ -335,6 +348,7 @@ export default class FullMapView extends Component {
               <MapboxGL.CircleLayer
                 id={'selected-point'}
                 sourceID={'selected-source'}
+                //aboveLayerID={aboveNearMeLayer}
                 style={[circleStyle.selectedPoint]}
               />
             </MapboxGL.ShapeSource>
