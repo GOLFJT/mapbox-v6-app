@@ -33,38 +33,56 @@ export default class FullMapView extends Component {
     filter: undefined,
     allpointOpacity: 1,
     snapshotURI: undefined,
+    userLocation: [100.5018, 13.7563],  // set initial as BKK
   }
 
   constructor(props) {
     super(props)
 
-    this.userLocation = undefined
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
   }
 
   componentDidMount() {
-    this.updateUserLocation()
+    this.tryUpdateUserLocation()
   }
 
   // DOINGG:
   tryUpdateUserLocation = () => {
-
-  }
-
-  updateUserLocation = () => {
     // request location permission
     navigator.geolocation.requestAuthorization()
+    this.watchUserLocation()
+  }
 
-    const getPositionSuccess = (position) => {
+  // DOINGG:
+  watchUserLocation = () => {
+    this.watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        // this.setState({
+        //   latitude: position.coords.latitude,
+        //   longitude: position.coords.longitude,
+        //   error: null,
+        // });
+        console.log('watchUserLocation : ', position)
+      },
+      (error) => {
+        console.log('watchUserLocation error : ', error)
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
+    );
+  }
+
+  // DOINGG:
+  updateUserLocation = () => {
+    navigator.geolocation.getCurrentPosition((position) => {
       console.log('getPositionSuccess : ', position)
-    }
-
-    const getPositionError = (err) => {
+      const { coords } = position
+      this.setState({
+        userLocation: [coords.longitude, coords.latitude]
+      })
+    }, (err) => {
       console.log('getPositionError : ', err)
-    }
-
-    navigator.geolocation.getCurrentPosition(getPositionSuccess, getPositionError)
+    })
   }
 
   onPressMap = (res) => {
@@ -246,7 +264,7 @@ export default class FullMapView extends Component {
   }
 
   render() {
-    const { allpointOpacity, filter, selectedFeature } = this.state
+    const { allpointOpacity, filter, selectedFeature, userLocation } = this.state
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -256,7 +274,8 @@ export default class FullMapView extends Component {
           //userTrackingMode={MapboxGL.UserTrackingModes.Follow}
           //styleURL={'http://172.16.16.23:1111/getMapStyle'}
           styleURL={MAP_STYLE_URL}
-          centerCoordinate={[100.5314, 13.7270]}
+          //centerCoordinate={[100.5314, 13.7270]}
+          centerCoordinate={userLocation}
           zoomLevel={10}
           logoEnabled={false}
           onPress={this.onPressMap}
