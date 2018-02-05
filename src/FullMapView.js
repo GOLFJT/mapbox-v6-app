@@ -9,6 +9,7 @@ import {
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 import buffer from '@turf/buffer'
+import turf from '@turf/helpers'
 import pinIcon from './assets/images/pin.png'
 
 const MAP_ACCESS_TOKEN = 'pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA'
@@ -64,9 +65,16 @@ export default class FullMapView extends Component {
         //   error: null,
         // });
         console.log('watchUserLocation : ', position)
+        const { coords } = position
+        this.setState({
+          userLocation: [coords.longitude, coords.latitude]
+        })
       },
       (error) => {
         console.log('watchUserLocation error : ', error)
+        this.setState({
+          userLocation: undefined
+        })
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
     );
@@ -195,6 +203,23 @@ export default class FullMapView extends Component {
     //     <MapboxGL.FillLayer/>
     //   </MapboxGL.ShapeSource>
     // )
+    
+    const { userLocation } = this.state
+    if (userLocation) {
+      const userPoint = turf.point(userLocation)
+      const buffered = buffer(userPoint, NEARME_RADIUS)
+
+      console.log('buffered : ', buffered)
+
+      return(
+        <MapboxGL.ShapeSource id={'nearme-radius'} shape={buffered}>
+          <MapboxGL.FillLayer id={'nearme-layer'} sourceID={'nearme-radius'} style={fillStyle.radius} />
+        </MapboxGL.ShapeSource>
+      )
+    } 
+
+    return null
+    
   }
 
   // DOING:
@@ -317,6 +342,7 @@ export default class FullMapView extends Component {
               />
             </MapboxGL.ShapeSource>
           }
+          {this.renderUserCurrentLocationRadius()}
           
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
@@ -419,3 +445,10 @@ const circleStyle = MapboxGL.StyleSheet.create({
     circleRadius: 15,
   },
 });
+
+const fillStyle = MapboxGL.StyleSheet.create({
+  radius: {
+    fillColor: 'plum',
+    fillOpacity: 0.5
+  }
+})
