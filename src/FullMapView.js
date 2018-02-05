@@ -48,6 +48,10 @@ export default class FullMapView extends Component {
     this.tryUpdateUserLocation()
   }
 
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchId)
+  }
+
   // DOINGG:
   tryUpdateUserLocation = () => {
     // request location permission
@@ -293,11 +297,12 @@ export default class FullMapView extends Component {
           styleURL={MAP_STYLE_URL}
           //centerCoordinate={[100.5314, 13.7270]}
           centerCoordinate={userLocation}
-          zoomLevel={10}
+          zoomLevel={13}
           logoEnabled={false}
           onPress={this.onPressMap}
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
         >
+          {this.renderUserCurrentLocationRadius()}
           <MapboxGL.VectorSource
             id={'jobthai'}
             url={'http://172.16.16.30:1111/getTileJSON'}
@@ -334,14 +339,13 @@ export default class FullMapView extends Component {
               />
             </MapboxGL.ShapeSource>
           }
-          {this.renderUserCurrentLocationRadius()}
           
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
         {this.renderFilterButton({ text: FILTER_SPK, left: 140})}
         {this.renderFilterButton({ text: FILTER_CNX, left: 200})}
-        {this.renderSnapshotImage()}
+        {/* {this.renderSnapshotImage()} */}
       </View>
     );
   }
@@ -440,7 +444,7 @@ const circleStyle = MapboxGL.StyleSheet.create({
 
 const fillStyle = MapboxGL.StyleSheet.create({
   radius: {
-    fillColor: 'plum',
+    fillColor: 'lightblue',
     fillOpacity: 0.5
   }
 })
