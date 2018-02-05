@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@mapbox/react-native-mapbox-gl": "6.0.3-rc1",
+    "@turf/buffer": "5.1.5",
     "react": "16.0.0",
     "react-native": "0.51"
   },
