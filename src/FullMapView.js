@@ -171,8 +171,8 @@ export default class FullMapView extends Component {
         zoomLevel: 15,
         // pitch: 30,
         // heading: 20,
-        // styleURL: MapboxGL.StyleURL.Dark,
         styleURL: MAP_STYLE_URL,
+        // styleURL: MAP_STYLE_URL,
         // writeToDisk: true, // creates a temp file
       })
 
@@ -222,7 +222,7 @@ export default class FullMapView extends Component {
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
-            url={'http://172.16.16.14:1111/getTileJSON'}
+            url={'http://172.16.16.30:1111/getTileJSON'}
           >
             <MapboxGL.CircleLayer
               id={'all-point'}
