@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
+import buffer from '@turf/buffer'
 import pinIcon from './assets/images/pin.png'
 
 const MAP_ACCESS_TOKEN = 'pk.eyJ1IjoiZWtzcGVra2VyIiwiYSI6ImNqN3pubWtrejRoYWsycW8zcmdjbHNyeGcifQ.gyxXyddP6lX8msJZmiFgHA'
@@ -24,6 +25,8 @@ const FILTER_CNX = 'CNX'
 const LIMIT = 10
 const INTERVAL_TIME = 50
 
+const NEARME_RADIUS = 1 // KM
+
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
@@ -35,9 +38,35 @@ export default class FullMapView extends Component {
   constructor(props) {
     super(props)
 
+    this.userLocation = undefined
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
   }
+
+  componentDidMount() {
+    this.updateUserLocation()
+  }
+
+  // DOINGG:
+  tryUpdateUserLocation = () => {
+
+  }
+
+  updateUserLocation = () => {
+    // request location permission
+    navigator.geolocation.requestAuthorization()
+
+    const getPositionSuccess = (position) => {
+      console.log('getPositionSuccess : ', position)
+    }
+
+    const getPositionError = (err) => {
+      console.log('getPositionError : ', err)
+    }
+
+    navigator.geolocation.getCurrentPosition(getPositionSuccess, getPositionError)
+  }
+
   onPressMap = (res) => {
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
@@ -140,6 +169,16 @@ export default class FullMapView extends Component {
     )
   }
 
+  // DOINGG:
+  renderUserCurrentLocationRadius = () => {
+    // const userRadius = buffer()
+    // return(
+    //   <MapboxGL.ShapeSource id={'nearme-radius'} shape={}>
+    //     <MapboxGL.FillLayer/>
+    //   </MapboxGL.ShapeSource>
+    // )
+  }
+
   // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
@@ -214,13 +253,14 @@ export default class FullMapView extends Component {
           ref={(ref) => this._map = ref}
           style={styles.mapContainer}
           showUserLocation={true}
-          userTrackingMode={MapboxGL.UserTrackingModes.Follow}
+          //userTrackingMode={MapboxGL.UserTrackingModes.Follow}
           //styleURL={'http://172.16.16.23:1111/getMapStyle'}
           styleURL={MAP_STYLE_URL}
           centerCoordinate={[100.5314, 13.7270]}
           zoomLevel={10}
           logoEnabled={false}
           onPress={this.onPressMap}
+          onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
         >
           <MapboxGL.VectorSource
             id={'jobthai'}
