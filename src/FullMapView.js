@@ -37,6 +37,7 @@ export default class FullMapView extends Component {
     snapshotURI: undefined,
     userLocation: [100.5018, 13.7563],  // set initial as BKK
     circleRadius: undefined,
+    screenCoords: [],
   }
 
   constructor(props) {
@@ -125,7 +126,44 @@ export default class FullMapView extends Component {
 
       })
 
+      const { screenPointX, screenPointY } = res.properties
+      const screenCoords = Object.assign([], this.state.screenCoords);
+      screenCoords.push([screenPointX, screenPointY]);
       
+      console.log('|=== onPress ===| res : ', res)
+
+
+      console.log('|=== onPress ===| screenCoords : ', screenCoords)
+
+      this.getPointInView(res.geometry.coordinates)
+
+      if (screenCoords.length === 2) {
+        // const featureCollection = await this._map.queryRenderedFeaturesInRect(
+        //   this.getBoundingBox(screenCoords),
+        //   null,
+        //   ['nycFill']
+        // );
+
+        const bboxxx = this.getBoundingBox(screenCoords)
+        console.log('|=== onPress ===| bboxxx : ', bboxxx)
+
+        this._map.queryRenderedFeaturesInRect(bboxxx)
+        .then((result) => {
+          console.log('|=== onPress ===| queryRenderedFeaturesInRect : ', result)
+        })
+
+        this.setState({
+          screenCoords: [],
+        });
+      } else {
+        this.setState({ screenCoords: screenCoords });
+      }
+  }
+
+  async getPointInView (coords) {
+    const pointInView = await this._map.getPointInView(coords)
+
+    console.log('pointInView : ', pointInView)
   }
 
   setSelectedFeature = (selectedFeature) => {
