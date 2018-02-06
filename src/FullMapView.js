@@ -10,6 +10,7 @@ import {
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 import circle from '@turf/circle'
 import truncate from '@turf/truncate'
+import pointsWithinPolygon from '@turf/points-within-polygon'
 import { coordAll } from '@turf/meta'
 import turf from '@turf/helpers'
 import pinIcon from './assets/images/pin.png'
@@ -28,9 +29,14 @@ const FILTER_CNX = 'CNX'
 const LIMIT = 10
 const INTERVAL_TIME = 50
 
-const NEARME_RADIUS = 1 // KM
+const NEARME_RADIUS = 2 // KM
 
 const SERVICE_LAST_IP = 23
+
+const INITIAL_FEATURE_COLLECTION = {
+  type: "FeatureCollection",
+  features: [],
+}
 
 export default class FullMapView extends Component {
   state = {
@@ -42,6 +48,7 @@ export default class FullMapView extends Component {
     circleRadius: undefined,
     screenCoords: [],
     visibleFeatures: [],
+    nearmePoints: INITIAL_FEATURE_COLLECTION,
   }
 
   constructor(props) {
@@ -260,8 +267,18 @@ export default class FullMapView extends Component {
       })
 
       // Find pointsWithinPolygon : visibleFeatures 
-
-
+      console.log('queryRenderedFeaturesInRect : ', result)
+      if (result.features.length > 0) {
+        const nearmePoints = pointsWithinPolygon(result, this.state.circleRadius)
+        console.log('nearmePoints : ', nearmePoints)
+        this.setState({
+          nearmePoints,
+        })
+      } else {
+        this.setState({
+          nearmePoints: INITIAL_FEATURE_COLLECTION,
+        })
+      }
     })
 
   }
@@ -274,7 +291,24 @@ export default class FullMapView extends Component {
     return [maxY, maxX, minY, minX];
   }
 
-  // DOINGG:
+  // DOINGGG:
+  renderNearmePoints = () => {
+    const { nearmePoints } = this.state
+
+    console.log('nearmePoints.length : ', nearmePoints.features.length)
+
+    if (nearmePoints.features.length > 0) {
+      
+      return (
+        <MapboxGL.ShapeSource id={'nearme-points'} shape={nearmePoints}>
+          <MapboxGL.CircleLayer id={'nearme-points-layer'} sourceID={'nearme-points'} style={circleStyle.nearmePoints} />
+        </MapboxGL.ShapeSource>
+      )
+    } 
+    
+    return null
+  }
+
   renderUserCurrentLocationRadius = () => {
     const { circleRadius } = this.state
 
@@ -424,6 +458,8 @@ export default class FullMapView extends Component {
             </MapboxGL.ShapeSource>
           }
 
+          {this.renderNearmePoints()}
+
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80 })}
@@ -523,6 +559,12 @@ const circleStyle = MapboxGL.StyleSheet.create({
     circleColor: 'lightseagreen',
     circleStrokeColor: 'white',
     circleRadius: 15,
+  },
+
+  nearmePoints: {
+    ...CIRCLE_POINT_BASE,
+    circleColor: 'crimson',
+    circleStrokeColor: 'white',
   },
 });
 
