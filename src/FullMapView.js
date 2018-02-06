@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
-import bbox from '@turf/bbox'
 import circle from '@turf/circle'
 import truncate from '@turf/truncate'
 import { coordAll } from '@turf/meta'
@@ -42,6 +41,7 @@ export default class FullMapView extends Component {
     userLocation: [100.5018, 13.7563],  // set initial as BKK
     circleRadius: undefined,
     screenCoords: [],
+    visibleFeatures: [],
   }
 
   constructor(props) {
@@ -49,7 +49,9 @@ export default class FullMapView extends Component {
 
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
-    // this.findNearme = this.findNearme.bind(this)
+    this.findNearme = this.findNearme.bind(this)
+
+    this.visibleBounds = []
   }
 
   componentDidMount() {
@@ -62,7 +64,13 @@ export default class FullMapView extends Component {
 
   onRegionDidChange = (res) => {
     console.log('onRegionDidChange : ', res)
-    this.findNearme(res.properties.visibleBounds)
+    this.visibleBounds = res.properties.visibleBounds
+    this.findNearme(this.visibleBounds)
+  }
+
+  onDidFinishRenderingMapFully = (res) => {
+    console.log('onDidFinishRenderingMapFully : ', res)
+    this.findNearme(this.visibleBounds)
   }
 
   // DOINGG:
@@ -114,6 +122,7 @@ export default class FullMapView extends Component {
   }
 
   onPressMap = (res) => {
+    console.log('|=== onPress ===| res : ', res)
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
         console.log('query : ', query.features)
@@ -127,48 +136,11 @@ export default class FullMapView extends Component {
 
         // this.onTakeSnapMap()
         this.onTakeSnapshot()
-
       })
-
-    // const { screenPointX, screenPointY } = res.properties
-    // const screenCoords = Object.assign([], this.state.screenCoords);
-    // screenCoords.push([screenPointX, screenPointY]);
-
-    console.log('|=== onPress ===| res : ', res)
-
-
-    // console.log('|=== onPress ===| screenCoords : ', screenCoords)
-
-    // this.getPointInView(res.geometry.coordinates)
-
-    // if (screenCoords.length === 2) {
-    //   // const featureCollection = await this._map.queryRenderedFeaturesInRect(
-    //   //   this.getBoundingBox(screenCoords),
-    //   //   null,
-    //   //   ['nycFill']
-    //   // );
-
-    //   const bboxxx = this.getBoundingBox(screenCoords)
-    //   console.log('|=== onPress ===| bboxxx : ', bboxxx)
-
-    //   this._map.queryRenderedFeaturesInRect(bboxxx, null, ['all-point', 'filtered-point'])
-    //   .then((result) => {
-    //     console.log('|=== onPress ===| queryRenderedFeaturesInRect : ', result)
-    //   })
-
-    //   this.setState({
-    //     screenCoords: [],
-    //   });
-    // } else {
-    //   this.setState({ screenCoords: screenCoords });
-    // }
   }
 
   async getPointInView(coords) {
     const pointInView = await this._map.getPointInView(coords)
-
-    console.log('pointInView : ', pointInView)
-
     return pointInView
   }
 
@@ -269,70 +241,28 @@ export default class FullMapView extends Component {
   async findNearme(bounds) {
     console.log('|=== findNearme ===| bounds : ', bounds)
 
-    // let coordsNE = undefined
-    // let coordsSW = undefined
-    // this.getPointInView(bounds[0]).then((point) => coordsNE = point)
-    // this.getPointInView(bounds[1]).then((point) => coordsSW = point)
-
-    // const coordsNE = await this.getPointInView(bounds[0])
-    // const coordsSW = await this.getPointInView(bounds[1])
-
-    // console.log('|=== findNearme ===| coordsNE : ', (coordsNE))
-    // console.log('|=== findNearme ===| coordsSW : ', (coordsSW))
-
-    // const pointNE = (turf.point(bounds[0]))
-    // const pointSW = (turf.point(bounds[1]))
-
-    // console.log('|=== findNearme ===| pointNE : ', (pointNE.geometry.coordinates))
-    // console.log('|=== findNearme ===| pointSW : ', (pointSW.geometry.coordinates))
-
     const featureCollection = turf.featureCollection([
       turf.point(bounds[0]),
       turf.point(bounds[1])
     ])
 
-    console.log('|=== findNearme ===| featureCollection : ', featureCollection)
-
     const truncateFeature = truncate(featureCollection)
-
-    console.log('|=== findNearme ===| truncateFeature : ', truncateFeature)
-
     const coords = coordAll(truncateFeature)
-
-    console.log('|=== findNearme ===| coords : ', coords)
-
     const screenCoordsNE = await this.getPointInView(coords[0])
     const screenCoordsSW = await this.getPointInView(coords[1])
-
-    // console.log(`|=== findNearme ===| screenCoordsNE : ${screenCoordsNE}\nscreenCoordsSW : ${screenCoordsSW}`)
-    console.log('|=== findNearme ===| screenCoordsNE : ', screenCoordsNE, '\nscreenCoordsSW : ', screenCoordsSW)
-
     const boundingBox = this.getBoundingBox([screenCoordsNE, screenCoordsSW])
-    console.log('|=== findNearme ===| boundingBox : ', boundingBox)
 
     this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point', 'filtered-point'])
-    .then((result) => console.log('|=== findNearme ===| queryRenderedFeaturesInRect : ', result))
+    .then((result) => {
+      // Set visibleFeatures state
+      this.setState({
+        visibleFeatures: result,
+      })
 
-    // const boundingBox = this.getBoundingBox([pointNE.geometry.coordinates, pointSW.geometry.coordinates])
-    // const boundingBox = [pointSW.geometry.coordinates[1], pointSW.geometry.coordinates[0], pointNE.geometry.coordinates[1], pointNE.geometry.coordinates[0]]
-    // const boundingBox = [736, 413.99, 1.30, 5.18]
+      // Find pointsWithinPolygon : visibleFeatures 
 
 
-    // const featureCollection = turf.featureCollection([
-    //   turf.point(bounds[0]),
-    //   turf.point(bounds[1])
-    // ])
-
-    // const bboxx = bbox(featureCollection)
-    // console.log('|=== findNearme ===| bboxx : ', bboxx)
-
-    // DOING:
-    // const boundingBox = bbox(turf.featureCollection([pointNE, pointSW]))
-
-    // console.log('|=== findNearme ===| boundingBox : ', (boundingBox))
-
-    // this._map.queryRenderedFeaturesInRect(boundingBox)
-    // .then((result) => console.log('|=== findNearme ===| queryRenderedFeaturesInRect : ', result))
+    })
 
   }
 
@@ -363,8 +293,13 @@ export default class FullMapView extends Component {
   // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
+    const onLayout = (layout) => {
+      const {x, y, width, height} = layout
+      console.log('width: ',width)
+    }
+
     return (
-      <View style={{ flex: 1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }} onLayout={(event) => { onLayout(event.nativeEvent.layout)}} >
         {
           snapshotURI &&
           <View>
@@ -445,6 +380,7 @@ export default class FullMapView extends Component {
           onPress={this.onPressMap}
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
           onRegionDidChange={this.onRegionDidChange}
+          onDidFinishRenderingMapFully={this.onDidFinishRenderingMapFully}
         >
           {this.renderUserCurrentLocationRadius()}
           <MapboxGL.VectorSource
