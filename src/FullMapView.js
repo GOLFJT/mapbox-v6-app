@@ -10,6 +10,8 @@ import {
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 import bbox from '@turf/bbox'
 import circle from '@turf/circle'
+import truncate from '@turf/truncate'
+import { coordAll } from '@turf/meta'
 import turf from '@turf/helpers'
 import pinIcon from './assets/images/pin.png'
 
@@ -28,6 +30,8 @@ const LIMIT = 10
 const INTERVAL_TIME = 50
 
 const NEARME_RADIUS = 1 // KM
+
+const SERVICE_LAST_IP = 23
 
 export default class FullMapView extends Component {
   state = {
@@ -126,44 +130,46 @@ export default class FullMapView extends Component {
 
       })
 
-      const { screenPointX, screenPointY } = res.properties
-      const screenCoords = Object.assign([], this.state.screenCoords);
-      screenCoords.push([screenPointX, screenPointY]);
-      
-      console.log('|=== onPress ===| res : ', res)
+    // const { screenPointX, screenPointY } = res.properties
+    // const screenCoords = Object.assign([], this.state.screenCoords);
+    // screenCoords.push([screenPointX, screenPointY]);
+
+    console.log('|=== onPress ===| res : ', res)
 
 
-      console.log('|=== onPress ===| screenCoords : ', screenCoords)
+    // console.log('|=== onPress ===| screenCoords : ', screenCoords)
 
-      this.getPointInView(res.geometry.coordinates)
+    // this.getPointInView(res.geometry.coordinates)
 
-      if (screenCoords.length === 2) {
-        // const featureCollection = await this._map.queryRenderedFeaturesInRect(
-        //   this.getBoundingBox(screenCoords),
-        //   null,
-        //   ['nycFill']
-        // );
+    // if (screenCoords.length === 2) {
+    //   // const featureCollection = await this._map.queryRenderedFeaturesInRect(
+    //   //   this.getBoundingBox(screenCoords),
+    //   //   null,
+    //   //   ['nycFill']
+    //   // );
 
-        const bboxxx = this.getBoundingBox(screenCoords)
-        console.log('|=== onPress ===| bboxxx : ', bboxxx)
+    //   const bboxxx = this.getBoundingBox(screenCoords)
+    //   console.log('|=== onPress ===| bboxxx : ', bboxxx)
 
-        this._map.queryRenderedFeaturesInRect(bboxxx)
-        .then((result) => {
-          console.log('|=== onPress ===| queryRenderedFeaturesInRect : ', result)
-        })
+    //   this._map.queryRenderedFeaturesInRect(bboxxx, null, ['all-point', 'filtered-point'])
+    //   .then((result) => {
+    //     console.log('|=== onPress ===| queryRenderedFeaturesInRect : ', result)
+    //   })
 
-        this.setState({
-          screenCoords: [],
-        });
-      } else {
-        this.setState({ screenCoords: screenCoords });
-      }
+    //   this.setState({
+    //     screenCoords: [],
+    //   });
+    // } else {
+    //   this.setState({ screenCoords: screenCoords });
+    // }
   }
 
-  async getPointInView (coords) {
+  async getPointInView(coords) {
     const pointInView = await this._map.getPointInView(coords)
 
     console.log('pointInView : ', pointInView)
+
+    return pointInView
   }
 
   setSelectedFeature = (selectedFeature) => {
@@ -202,14 +208,14 @@ export default class FullMapView extends Component {
   }
 
   animatePoint = () => {
-    
+
     const callback = (opacity) => this.setState({
       allpointOpacity: opacity
     })
 
-    if(this.state.filter && (this.state.allpointOpacity === 1)) {
+    if (this.state.filter && (this.state.allpointOpacity === 1)) {
       this.animatePointFadeOut(callback)
-    } else if(!this.state.filter && (this.state.allpointOpacity === 0)) {
+    } else if (!this.state.filter && (this.state.allpointOpacity === 0)) {
       this.animatePointFadeIn(callback)
     }
 
@@ -222,7 +228,7 @@ export default class FullMapView extends Component {
       if (i === LIMIT) {
         clearInterval(this.fadeInInterval)
       }
-      callback(i/10)
+      callback(i / 10)
       i++
     }, INTERVAL_TIME)
   }
@@ -234,15 +240,15 @@ export default class FullMapView extends Component {
       if (i === 0) {
         clearInterval(this.fadeOutInterval)
       }
-      callback(i/10)
+      callback(i / 10)
       i--
     }, INTERVAL_TIME)
   }
 
   renderFilterButton = (options) => {
     let { text, left } = options
-    return(
-      <TouchableOpacity style={[styles.filterButton, {left}]} onPress={() => this.onPressFilterButton(text)} >
+    return (
+      <TouchableOpacity style={[styles.filterButton, { left }]} onPress={() => this.onPressFilterButton(text)} >
         <Text>{text}</Text>
       </TouchableOpacity>
     )
@@ -251,7 +257,7 @@ export default class FullMapView extends Component {
   // DOINGG:
   createCircleRadius = () => {
     const { userLocation } = this.state
-    const circleRadius = circle(userLocation, NEARME_RADIUS)
+    const circleRadius = circle(userLocation, NEARME_RADIUS, { properties: { id: 'nearme-polygon' } })
     console.log('circleRadius : ', circleRadius)
     this.setState({
       circleRadius
@@ -259,31 +265,75 @@ export default class FullMapView extends Component {
   }
 
   // DOINGGG:
-  findNearme = (bounds) => {
-    // const visibleBounds = await this._map.getVisibleBounds()
-    // console.log('visibleBounds : ', visibleBounds)
+  // findNearme = (bounds) => {
+  async findNearme(bounds) {
+    console.log('|=== findNearme ===| bounds : ', bounds)
 
-    // const bboxBound = [...visibleBounds[1], ...visibleBounds[0]]
+    // let coordsNE = undefined
+    // let coordsSW = undefined
+    // this.getPointInView(bounds[0]).then((point) => coordsNE = point)
+    // this.getPointInView(bounds[1]).then((point) => coordsSW = point)
 
-    // this._map.queryRenderedFeaturesInRect(bboxBound)
-    // .then((result) => console.log('queryRenderedFeaturesInRect : ', result.features))
+    // const coordsNE = await this.getPointInView(bounds[0])
+    // const coordsSW = await this.getPointInView(bounds[1])
 
-    const bbox2 = this.getBoundingBox(bounds)
+    // console.log('|=== findNearme ===| coordsNE : ', (coordsNE))
+    // console.log('|=== findNearme ===| coordsSW : ', (coordsSW))
 
-    console.log('bbox : ', bbox2)
+    // const pointNE = (turf.point(bounds[0]))
+    // const pointSW = (turf.point(bounds[1]))
 
-    const bbox3 = bbox(turf.featureCollection([
+    // console.log('|=== findNearme ===| pointNE : ', (pointNE.geometry.coordinates))
+    // console.log('|=== findNearme ===| pointSW : ', (pointSW.geometry.coordinates))
+
+    const featureCollection = turf.featureCollection([
       turf.point(bounds[0]),
-      turf.point(bounds[1]),
-      turf.point([bounds[0][1], bounds[0][0]]),
-      turf.point([bounds[1][1], bounds[1][0]])
-    ]))
+      turf.point(bounds[1])
+    ])
 
-    console.log('bbox3 : ', bbox3)
+    console.log('|=== findNearme ===| featureCollection : ', featureCollection)
 
-    // this._map.queryRenderedFeaturesInRect(bbox, null, ['all-point', 'filtered-point'])
-    this._map.queryRenderedFeaturesInRect(bbox2)
-    .then((result) => console.log('queryRenderedFeaturesInRect : ', result.features))
+    const truncateFeature = truncate(featureCollection)
+
+    console.log('|=== findNearme ===| truncateFeature : ', truncateFeature)
+
+    const coords = coordAll(truncateFeature)
+
+    console.log('|=== findNearme ===| coords : ', coords)
+
+    const screenCoordsNE = await this.getPointInView(coords[0])
+    const screenCoordsSW = await this.getPointInView(coords[1])
+
+    // console.log(`|=== findNearme ===| screenCoordsNE : ${screenCoordsNE}\nscreenCoordsSW : ${screenCoordsSW}`)
+    console.log('|=== findNearme ===| screenCoordsNE : ', screenCoordsNE, '\nscreenCoordsSW : ', screenCoordsSW)
+
+    const boundingBox = this.getBoundingBox([screenCoordsNE, screenCoordsSW])
+    console.log('|=== findNearme ===| boundingBox : ', boundingBox)
+
+    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point', 'filtered-point'])
+    .then((result) => console.log('|=== findNearme ===| queryRenderedFeaturesInRect : ', result))
+
+    // const boundingBox = this.getBoundingBox([pointNE.geometry.coordinates, pointSW.geometry.coordinates])
+    // const boundingBox = [pointSW.geometry.coordinates[1], pointSW.geometry.coordinates[0], pointNE.geometry.coordinates[1], pointNE.geometry.coordinates[0]]
+    // const boundingBox = [736, 413.99, 1.30, 5.18]
+
+
+    // const featureCollection = turf.featureCollection([
+    //   turf.point(bounds[0]),
+    //   turf.point(bounds[1])
+    // ])
+
+    // const bboxx = bbox(featureCollection)
+    // console.log('|=== findNearme ===| bboxx : ', bboxx)
+
+    // DOING:
+    // const boundingBox = bbox(turf.featureCollection([pointNE, pointSW]))
+
+    // console.log('|=== findNearme ===| boundingBox : ', (boundingBox))
+
+    // this._map.queryRenderedFeaturesInRect(boundingBox)
+    // .then((result) => console.log('|=== findNearme ===| queryRenderedFeaturesInRect : ', result))
+
   }
 
   getBoundingBox = (screenCoords) => {
@@ -299,37 +349,37 @@ export default class FullMapView extends Component {
     const { circleRadius } = this.state
 
     if (circleRadius) {
-      return(
+      return (
         <MapboxGL.ShapeSource id={'nearme-radius'} shape={circleRadius}>
           <MapboxGL.FillLayer id={'nearme-layer'} sourceID={'nearme-radius'} style={fillStyle.radius} />
         </MapboxGL.ShapeSource>
       )
-    } 
+    }
 
     return null
-    
+
   }
 
   // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
-    return(
-      <View style={{ flex:1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
+    return (
+      <View style={{ flex: 1, backgroundColor: 'rosybrown', alignItems: 'center', justifyContent: 'center' }}>
         {
           snapshotURI &&
           <View>
             <Image source={{ uri: snapshotURI }} style={{ width: 200, height: 200 }} />
             <Image source={pinIcon} style={{ width: 20, height: 30, position: 'absolute', top: 70, left: 90, resizeMode: 'contain' }} />
           </View>
-          
+
         }
       </View>
     )
   }
 
   // DOING:
-  async onTakeSnapshot () {
-  // onTakeSnapshot () {
+  async onTakeSnapshot() {
+    // onTakeSnapshot () {
     const { selectedFeature } = this.state
 
     if (selectedFeature) {
@@ -360,12 +410,12 @@ export default class FullMapView extends Component {
     }
 
     console.log('selected Feature : ', selectedFeature)
-    
 
-    
+
+
   }
 
-  async onTakeSnapMap () {
+  async onTakeSnapMap() {
     const uri = await this._map.takeSnap(false);
     this.setSnapshotURI(uri)
   }
@@ -399,14 +449,15 @@ export default class FullMapView extends Component {
           {this.renderUserCurrentLocationRadius()}
           <MapboxGL.VectorSource
             id={'jobthai'}
-            url={'http://172.16.16.30:1111/getTileJSON'}
+            //url={'http://172.16.16.23:1111/getTileJSON'}
+            url={`http://172.16.16.${SERVICE_LAST_IP}:1111/getTileJSON`}
           >
             <MapboxGL.CircleLayer
               id={'all-point'}
               sourceID={'jobthai'}
               sourceLayerID={'geojsonLayer'}
               //aboveLayerID={aboveNearMeLayer}
-              style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity}]}
+              style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity }]}
             />
             {
               filter &&
@@ -436,12 +487,12 @@ export default class FullMapView extends Component {
               />
             </MapboxGL.ShapeSource>
           }
-          
+
         </MapboxGL.MapView>
-        {this.renderFilterButton({ text: FILTER_ALL, left: 20})}
-        {this.renderFilterButton({ text: FILTER_BKK, left: 80})}
-        {this.renderFilterButton({ text: FILTER_SPK, left: 140})}
-        {this.renderFilterButton({ text: FILTER_CNX, left: 200})}
+        {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
+        {this.renderFilterButton({ text: FILTER_BKK, left: 80 })}
+        {this.renderFilterButton({ text: FILTER_SPK, left: 140 })}
+        {this.renderFilterButton({ text: FILTER_CNX, left: 200 })}
         {/* {this.renderSnapshotImage()} */}
       </View>
     );
