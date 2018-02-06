@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
+import bbox from '@turf/bbox'
 import circle from '@turf/circle'
 import turf from '@turf/helpers'
 import pinIcon from './assets/images/pin.png'
@@ -43,6 +44,7 @@ export default class FullMapView extends Component {
 
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
+    // this.findNearme = this.findNearme.bind(this)
   }
 
   componentDidMount() {
@@ -51,6 +53,11 @@ export default class FullMapView extends Component {
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchId)
+  }
+
+  onRegionDidChange = (res) => {
+    console.log('onRegionDidChange : ', res)
+    this.findNearme(res.properties.visibleBounds)
   }
 
   // DOINGG:
@@ -213,9 +220,46 @@ export default class FullMapView extends Component {
     })
   }
 
+  // DOINGGG:
+  findNearme = (bounds) => {
+    // const visibleBounds = await this._map.getVisibleBounds()
+    // console.log('visibleBounds : ', visibleBounds)
+
+    // const bboxBound = [...visibleBounds[1], ...visibleBounds[0]]
+
+    // this._map.queryRenderedFeaturesInRect(bboxBound)
+    // .then((result) => console.log('queryRenderedFeaturesInRect : ', result.features))
+
+    const bbox2 = this.getBoundingBox(bounds)
+
+    console.log('bbox : ', bbox2)
+
+    const bbox3 = bbox(turf.featureCollection([
+      turf.point(bounds[0]),
+      turf.point(bounds[1]),
+      turf.point([bounds[0][1], bounds[0][0]]),
+      turf.point([bounds[1][1], bounds[1][0]])
+    ]))
+
+    console.log('bbox3 : ', bbox3)
+
+    // this._map.queryRenderedFeaturesInRect(bbox, null, ['all-point', 'filtered-point'])
+    this._map.queryRenderedFeaturesInRect(bbox2)
+    .then((result) => console.log('queryRenderedFeaturesInRect : ', result.features))
+  }
+
+  getBoundingBox = (screenCoords) => {
+    const maxX = Math.max(screenCoords[0][0], screenCoords[1][0]);
+    const minX = Math.min(screenCoords[0][0], screenCoords[1][0]);
+    const maxY = Math.max(screenCoords[0][1], screenCoords[1][1]);
+    const minY = Math.min(screenCoords[0][1], screenCoords[1][1]);
+    return [maxY, maxX, minY, minX];
+  }
+
   // DOINGG:
   renderUserCurrentLocationRadius = () => {
     const { circleRadius } = this.state
+
     if (circleRadius) {
       return(
         <MapboxGL.ShapeSource id={'nearme-radius'} shape={circleRadius}>
@@ -312,6 +356,7 @@ export default class FullMapView extends Component {
           logoEnabled={false}
           onPress={this.onPressMap}
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
+          onRegionDidChange={this.onRegionDidChange}
         >
           {this.renderUserCurrentLocationRadius()}
           <MapboxGL.VectorSource
