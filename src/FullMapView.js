@@ -29,7 +29,7 @@ const FILTER_CNX = 'CNX'
 const LIMIT = 10
 const INTERVAL_TIME = 50
 
-const NEARME_RADIUS = 2 // KM
+const NEARME_RADIUS = 1 // KM
 
 const SERVICE_LAST_IP = 21
 
@@ -41,6 +41,7 @@ const INITIAL_FEATURE_COLLECTION = {
 export default class FullMapView extends Component {
   state = {
     selectedFeature: null,
+    queryFeatures: null,
     filter: undefined,
     allpointOpacity: 1,
     snapshotURI: undefined,
@@ -49,6 +50,7 @@ export default class FullMapView extends Component {
     screenCoords: [],
     visibleFeatures: [],
     nearmePoints: INITIAL_FEATURE_COLLECTION,
+    selectedFeatureIndex: 0,
   }
 
   constructor(props) {
@@ -72,12 +74,12 @@ export default class FullMapView extends Component {
   onRegionDidChange = (res) => {
     console.log('onRegionDidChange : ', res)
     this.visibleBounds = res.properties.visibleBounds
-    this.findNearme(this.visibleBounds)
+    // this.findNearme(this.visibleBounds)
   }
 
   onDidFinishRenderingMapFully = () => {
     // Find nearme for First Map Rendered
-    this.findNearme(this.visibleBounds)
+    // this.findNearme(this.visibleBounds)
   }
 
   tryUpdateUserLocation = () => {
@@ -99,7 +101,7 @@ export default class FullMapView extends Component {
         this.setState({
           userLocation: [coords.longitude, coords.latitude]
         }, () => {
-          this.createCircleRadius()
+          // this.createCircleRadius()
         })
       },
       (error) => {
@@ -123,33 +125,46 @@ export default class FullMapView extends Component {
     })
   }
 
+  // DOINGG:
   onPressMap = (res) => {
-    console.log('|=== onPress ===| res : ', res)
+    // console.log('|=== onPress ===| res : ', res)
+    const { queryFeatures, selectedFeatureIndex } = this.state
     this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
       .then((query) => {
         console.log('query : ', query.features)
+
+        let indexFeatures = -1
+        let selectedFeature = null
+
         if (query.features.length > 0) {
-          const selectedFeature = query.features[0];
-          this.setSelectedFeature(selectedFeature)
+          // check is get same result
+          if (JSON.stringify(query) === JSON.stringify(queryFeatures)) {
+            console.log('|=== onPressMap ===| Get same result')
+            const nextIndex = selectedFeatureIndex + 1
+            indexFeatures = (nextIndex + 1 > query.features.length) ? 0 : nextIndex
+          } else {
+            console.log('|=== onPressMap ===| Get new result')
+            indexFeatures = 0
+          }
+          
+          selectedFeature = query.features[indexFeatures];
+
         } else {
-          this.setSelectedFeature(null)
-          this.setSnapshotURI(null)
+          indexFeatures = 0
+          selectedFeature = null
         }
 
-        // this.onTakeSnapMap()
-        // this.onTakeSnapshot()
+        this.setState({
+          queryFeatures: query,
+          selectedFeatureIndex: indexFeatures,
+          selectedFeature: selectedFeature
+        })
       })
   }
 
   async getPointInView(coords) {
     const pointInView = await this._map.getPointInView(coords)
     return pointInView
-  }
-
-  setSelectedFeature = (selectedFeature) => {
-    this.setState({
-      selectedFeature
-    })
   }
 
   onPressFilterButton = (filter) => {
@@ -365,6 +380,7 @@ export default class FullMapView extends Component {
     })
   }
 
+  // DOING:
   render() {
     const { allpointOpacity, filter, selectedFeature, userLocation, circleRadius } = this.state
 
@@ -379,14 +395,14 @@ export default class FullMapView extends Component {
           styleURL={MAP_STYLE_URL}
           //centerCoordinate={[100.5314, 13.7270]}
           centerCoordinate={userLocation}
-          zoomLevel={13}
+          zoomLevel={10}
           logoEnabled={false}
           onPress={this.onPressMap}
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
           onRegionDidChange={this.onRegionDidChange}
           onDidFinishRenderingMapFully={this.onDidFinishRenderingMapFully}
         >
-          {this.renderUserCurrentLocationRadius()}
+          {/* {this.renderUserCurrentLocationRadius()} */}
           <MapboxGL.VectorSource
             id={'jobthai'}
             //url={'http://172.16.16.23:1111/getTileJSON'}
@@ -428,7 +444,7 @@ export default class FullMapView extends Component {
             </MapboxGL.ShapeSource>
           }
 
-          {this.renderNearmePoints()}
+          {/* {this.renderNearmePoints()} */}
 
         </MapboxGL.MapView>
         {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
@@ -507,7 +523,7 @@ const symbolStyle = MapboxGL.StyleSheet.create({
 })
 
 const CIRCLE_POINT_BASE = {
-  circleRadius: 8,
+  circleRadius: 12,
   circleStrokeWidth: 2,
 }
 
