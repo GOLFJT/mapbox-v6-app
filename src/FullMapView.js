@@ -31,7 +31,7 @@ const INTERVAL_TIME = 50
 
 const NEARME_RADIUS = 2 // KM
 
-const SERVICE_LAST_IP = 23
+const SERVICE_LAST_IP = 21
 
 const INITIAL_FEATURE_COLLECTION = {
   type: "FeatureCollection",
@@ -264,7 +264,6 @@ export default class FullMapView extends Component {
       // Find pointsWithinPolygon : visibleFeatures 
       if (result.features.length > 0) {
         const nearmePoints = pointsWithinPolygon(result, this.state.circleRadius)
-        console.log('nearmePoints : ', nearmePoints)
         this.setState({
           nearmePoints,
         })
