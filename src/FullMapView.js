@@ -10,6 +10,7 @@ import {
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
 import circle from '@turf/circle'
 import truncate from '@turf/truncate'
+import distance from '@turf/distance'
 import pointsWithinPolygon from '@turf/points-within-polygon'
 import { coordAll } from '@turf/meta'
 import turf from '@turf/helpers'
@@ -48,7 +49,7 @@ export default class FullMapView extends Component {
     userLocation: [100.5018, 13.7563],  // set initial as BKK
     circleRadius: undefined,
     screenCoords: [],
-    visibleFeatures: [],
+    visibleFeatures: INITIAL_FEATURE_COLLECTION,
     nearmePoints: INITIAL_FEATURE_COLLECTION,
     selectedFeatureIndex: 0,
   }
@@ -59,6 +60,7 @@ export default class FullMapView extends Component {
     this.onTakeSnapMap = this.onTakeSnapMap.bind(this)
     this.onTakeSnapshot = this.onTakeSnapshot.bind(this)
     this.findNearme = this.findNearme.bind(this)
+    this.getVisibleFeaturesInBound = this.getVisibleFeaturesInBound.bind(this)
 
     this.visibleBounds = []
   }
@@ -71,15 +73,18 @@ export default class FullMapView extends Component {
     navigator.geolocation.clearWatch(this.watchId)
   }
 
+  // DOINGG:
   onRegionDidChange = (res) => {
     console.log('onRegionDidChange : ', res)
     this.visibleBounds = res.properties.visibleBounds
     // this.findNearme(this.visibleBounds)
+    this.getVisibleFeaturesInBound(this.visibleBounds)
   }
 
   onDidFinishRenderingMapFully = () => {
     // Find nearme for First Map Rendered
     // this.findNearme(this.visibleBounds)
+    this.getVisibleFeaturesInBound(this.visibleBounds)
   }
 
   tryUpdateUserLocation = () => {
@@ -124,12 +129,58 @@ export default class FullMapView extends Component {
       console.log('getPositionError : ', err)
     })
   }
+  
+  // DOINGG:
+  // getVisibleFeaturesInBound = (visibleBound) => {
+  async getVisibleFeaturesInBound (visibleBound) {
+    console.log('|=== getVisibleFeaturesInBound ===| visibleBound : ', visibleBound)
+    const featureCollection = turf.featureCollection([
+      turf.point(visibleBound[0]),
+      turf.point(visibleBound[1])
+    ])
+
+    const truncateFeature = truncate(featureCollection)
+    const coords = coordAll(truncateFeature)
+    const screenCoordsNE = await this.getPointInView(coords[0])
+    const screenCoordsSW = await this.getPointInView(coords[1])
+    const boundingBox = this.getBoundingBox([screenCoordsNE, screenCoordsSW])
+
+    console.log('boundingBox : ', boundingBox)
+
+    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point', 'filtered-point'])
+    .then((result) => {
+      console.log('|=== getVisibleFeaturesInBound ===| queryRenderedFeaturesInRect : ', result)
+      // this.setState({
+      //   visibleFeatures: result,
+      // })
+
+      if (result.features.length > 0) {
+        this.calculateNearMeDistance(result)
+      }
+
+    })
+  }
 
   // DOINGG:
+  calculateNearMeDistance = (visibleFeatures) => {
+    const { userLocation } = this.state
+    const userLocationPoint = turf.point(userLocation)
+
+    visibleFeatures.features.forEach((point) => {
+      const featurePoint = turf.point(point.geometry.coordinates)
+      point.properties.distance = distance(userLocationPoint, featurePoint)
+    })
+
+    this.setState({
+      visibleFeatures
+    })
+  }
+
   onPressMap = (res) => {
     // console.log('|=== onPress ===| res : ', res)
     const { queryFeatures, selectedFeatureIndex } = this.state
-    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
+    // this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['all-point', 'filtered-point'])
+    this._map.queryRenderedFeaturesAtPoint([res.properties.screenPointX, res.properties.screenPointY], null, ['visible-points-layer'])
       .then((query) => {
         console.log('query : ', query.features)
 
@@ -251,6 +302,7 @@ export default class FullMapView extends Component {
     })
   }
 
+  // DOING:
   async findNearme(bounds) {
     const featureCollection = turf.featureCollection([
       turf.point(bounds[0]),
@@ -314,6 +366,21 @@ export default class FullMapView extends Component {
         </MapboxGL.ShapeSource>
       )
     }
+    return null
+  }
+
+  // DOINGG:
+  renderVisibleFeatures = () => {
+    const { visibleFeatures } = this.state
+
+    if (visibleFeatures.features.length > 0) {
+      return (
+        <MapboxGL.ShapeSource id={'visible-points'} shape={visibleFeatures}>
+          <MapboxGL.CircleLayer id={'visible-points-layer'} sourceID={'visible-points'} style={circleStyle.nearmePoints} />
+        </MapboxGL.ShapeSource>
+      )
+    } 
+
     return null
   }
 
@@ -446,11 +513,13 @@ export default class FullMapView extends Component {
 
           {/* {this.renderNearmePoints()} */}
 
+          {this.renderVisibleFeatures()}
+
         </MapboxGL.MapView>
-        {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
+        {/* {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
         {this.renderFilterButton({ text: FILTER_BKK, left: 80 })}
         {this.renderFilterButton({ text: FILTER_SPK, left: 140 })}
-        {this.renderFilterButton({ text: FILTER_CNX, left: 200 })}
+        {this.renderFilterButton({ text: FILTER_CNX, left: 200 })} */}
         {/* {this.renderSnapshotImage()} */}
       </View>
     );
