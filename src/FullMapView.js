@@ -395,7 +395,7 @@ export default class FullMapView extends Component {
           styleURL={MAP_STYLE_URL}
           //centerCoordinate={[100.5314, 13.7270]}
           centerCoordinate={userLocation}
-          zoomLevel={10}
+          zoomLevel={12}
           logoEnabled={false}
           onPress={this.onPressMap}
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
@@ -523,7 +523,7 @@ const symbolStyle = MapboxGL.StyleSheet.create({
 })
 
 const CIRCLE_POINT_BASE = {
-  circleRadius: 12,
+  circleRadius: 8,
   circleStrokeWidth: 2,
 }
 
@@ -544,7 +544,7 @@ const circleStyle = MapboxGL.StyleSheet.create({
     ...CIRCLE_POINT_BASE,
     circleColor: 'lightseagreen',
     circleStrokeColor: 'white',
-    circleRadius: 15,
+    circleRadius: 12,
   },
 
   nearmePoints: {
