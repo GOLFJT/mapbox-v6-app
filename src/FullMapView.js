@@ -80,7 +80,6 @@ export default class FullMapView extends Component {
     this.findNearme(this.visibleBounds)
   }
 
-  // DOINGG:
   tryUpdateUserLocation = () => {
     // request location permission
     navigator.geolocation.requestAuthorization()
@@ -88,7 +87,6 @@ export default class FullMapView extends Component {
 
   }
 
-  // DOINGG:
   watchUserLocation = () => {
     this.watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -114,7 +112,6 @@ export default class FullMapView extends Component {
     );
   }
 
-  // DOINGG:
   updateUserLocation = () => {
     navigator.geolocation.getCurrentPosition((position) => {
       const { coords } = position
@@ -231,7 +228,6 @@ export default class FullMapView extends Component {
     )
   }
 
-  // DOINGG:
   createCircleRadius = () => {
     const { userLocation } = this.state
     const circleRadius = circle(userLocation, NEARME_RADIUS, { properties: { id: 'nearme-polygon' } })
@@ -240,8 +236,6 @@ export default class FullMapView extends Component {
     })
   }
 
-  // DOINGGG:
-  // findNearme = (bounds) => {
   async findNearme(bounds) {
     const featureCollection = turf.featureCollection([
       turf.point(bounds[0]),
@@ -284,7 +278,6 @@ export default class FullMapView extends Component {
     return [maxY, maxX, minY, minX];
   }
 
-  // DOINGGG:
   renderNearmePoints = () => {
     const { nearmePoints } = this.state
     if (nearmePoints.features.length > 0) {
@@ -309,7 +302,6 @@ export default class FullMapView extends Component {
     return null
   }
 
-  // DOING:
   renderSnapshotImage = () => {
     const { snapshotURI } = this.state
     const onLayout = (layout) => {
@@ -330,7 +322,6 @@ export default class FullMapView extends Component {
     )
   }
 
-  // DOING:
   async onTakeSnapshot() {
     // onTakeSnapshot () {
     const { selectedFeature } = this.state
