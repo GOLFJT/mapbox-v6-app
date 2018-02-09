@@ -32,8 +32,9 @@ const INTERVAL_TIME = 50
 
 const NEARME_RADIUS = 1 // KM
 
-const SERVICE_LAST_IP = 21
+const SERVICE_LAST_IP = 27
 
+const INITIAL_USER_LOCATION = [100.5018, 13.7563]
 const INITIAL_FEATURE_COLLECTION = {
   type: "FeatureCollection",
   features: [],
@@ -46,7 +47,7 @@ export default class FullMapView extends Component {
     filter: undefined,
     allpointOpacity: 1,
     snapshotURI: undefined,
-    userLocation: [100.5018, 13.7563],  // set initial as BKK
+    userLocation: INITIAL_USER_LOCATION,  // set initial as BKK
     circleRadius: undefined,
     screenCoords: [],
     visibleFeatures: INITIAL_FEATURE_COLLECTION,
@@ -112,7 +113,7 @@ export default class FullMapView extends Component {
       (error) => {
         console.log('watchUserLocation error : ', error)
         this.setState({
-          userLocation: undefined
+          userLocation: INITIAL_USER_LOCATION
         })
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
@@ -147,7 +148,7 @@ export default class FullMapView extends Component {
 
     console.log('boundingBox : ', boundingBox)
 
-    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point', 'filtered-point'])
+    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point'])
     .then((result) => {
       console.log('|=== getVisibleFeaturesInBound ===| queryRenderedFeaturesInRect : ', result)
       // this.setState({
@@ -173,6 +174,22 @@ export default class FullMapView extends Component {
 
     this.setState({
       visibleFeatures
+    })
+  }
+
+  // DOINGG:
+  sortFeaturesFromDistance = () => {
+    const { visibleFeatures } = this.state
+
+    visibleFeatures.features.sort((a, b) => {
+      // if (a.properties.distance > b.properties.distance) {
+      //   return 1;
+      // }
+      // if (a.properties.distance < b.properties.distance) {
+      //   return -1;
+      // }
+      // // a must be equal to b
+      // return 0;
     })
   }
 
@@ -468,6 +485,8 @@ export default class FullMapView extends Component {
           onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
           onRegionDidChange={this.onRegionDidChange}
           onDidFinishRenderingMapFully={this.onDidFinishRenderingMapFully}
+          pitchEnabled={false}
+          rotateEnabled={false}
         >
           {/* {this.renderUserCurrentLocationRadius()} */}
           <MapboxGL.VectorSource
