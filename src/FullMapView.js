@@ -172,25 +172,40 @@ export default class FullMapView extends Component {
       point.properties.distance = distance(userLocationPoint, featurePoint)
     })
 
-    this.setState({
-      visibleFeatures
-    })
+    // this.setState({
+    //   visibleFeatures
+    // }, () => {
+    //   this.sortFeaturesFromDistance()
+    // })
+
+    this.sortFeaturesFromDistance(visibleFeatures)
   }
 
   // DOINGG:
-  sortFeaturesFromDistance = () => {
-    const { visibleFeatures } = this.state
+  // sortFeaturesFromDistance = () => {
+  sortFeaturesFromDistance = (visibleFeatures) => {
+    // const { visibleFeatures } = this.state
 
-    visibleFeatures.features.sort((a, b) => {
-      // if (a.properties.distance > b.properties.distance) {
-      //   return 1;
-      // }
-      // if (a.properties.distance < b.properties.distance) {
-      //   return -1;
-      // }
-      // // a must be equal to b
-      // return 0;
+    const sortVisibleFeatures = {
+      type: 'FeatureCollection',
+      features: [...visibleFeatures.features]
+    }
+
+    sortVisibleFeatures.features.sort((a, b) => {
+      if (a.properties.distance > b.properties.distance) {
+        return 1;
+      }
+      if (a.properties.distance < b.properties.distance) {
+        return -1;
+      }
+      // a must be equal to b
+      return 0;
     })
+
+    this.setState({
+      visibleFeatures: sortVisibleFeatures,
+    }, () => console.log('visibleFeatures : ', this.state.visibleFeatures))
+
   }
 
   onPressMap = (res) => {
