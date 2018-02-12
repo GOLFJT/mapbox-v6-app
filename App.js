@@ -4,13 +4,14 @@ import {
   View
 } from 'react-native';
 
-import FullMapView from './src/FullMapView'
+// import FullMapView from './src/FullMapView'
+import AppWithNavigation from './src/navigation'
 
 export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <FullMapView />
+        <AppWithNavigation />
       </View>
     );
   }
