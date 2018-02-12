@@ -143,7 +143,6 @@ export default class FullMapView extends Component {
   // DOINGG:
   // getVisibleFeaturesInBound = (visibleBound) => {
   async getVisibleFeaturesInBound (visibleBound) {
-    console.log('|=== getVisibleFeaturesInBound ===| visibleBound : ', visibleBound)
     const featureCollection = turf.featureCollection([
       turf.point(visibleBound[0]),
       turf.point(visibleBound[1])
@@ -154,8 +153,6 @@ export default class FullMapView extends Component {
     const screenCoordsNE = await this.getPointInView(coords[0])
     const screenCoordsSW = await this.getPointInView(coords[1])
     const boundingBox = this.getBoundingBox([screenCoordsNE, screenCoordsSW])
-
-    console.log('boundingBox : ', boundingBox)
 
     this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point'])
     .then((result) => {
@@ -502,7 +499,7 @@ export default class FullMapView extends Component {
 
     const onPress = () => {
       this.updateUserLocation(() => {
-        this._map.moveTo(this.state.userLocation)
+        this._map.flyTo(this.state.userLocation)
       })
     }
 
@@ -519,9 +516,6 @@ export default class FullMapView extends Component {
   // DOINGG:
   renderFeaturesList = () => {
     const { features } = this.state.visibleFeatures
-    console.log('renderFeaturesList visibleFeatures : ', this.state.visibleFeatures)
-    console.log('renderFeaturesList features : ', features)
-
     const listHeader = () => {
       return(
         <View style={styles.listFeatureHeader}>
