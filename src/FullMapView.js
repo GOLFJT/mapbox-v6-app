@@ -5,6 +5,7 @@ import {
   Text,
   Image,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
 
 import MapboxGL from '@mapbox/react-native-mapbox-gl';
@@ -506,83 +507,130 @@ export default class FullMapView extends Component {
     )
   }
 
+  // DOINGG:
+  renderFeaturesList = () => {
+    const { features } = this.state.visibleFeatures
+    console.log('renderFeaturesList visibleFeatures : ', this.state.visibleFeatures)
+    console.log('renderFeaturesList features : ', features)
+
+    const listHeader = () => {
+      return(
+        <View style={styles.listFeatureHeader}>
+          <Text>{features.length} Visible Features</Text>
+        </View>
+      )
+    }
+
+    const rowItem = (item, index) => {
+      return(
+        <View style={styles.listFeatureRow}>
+          <Text style={styles.listFeatureItem}>{index+1}.</Text>
+          <Text style={styles.listFeatureItem}>{item.properties.zip}, {item.properties.district}</Text>
+          <Text style={styles.listFeatureItem}>Distance: {item.properties.distance.toFixed(2)}km</Text>
+        </View>
+      )
+    }
+
+    return(
+      <View style={styles.listContainer}>
+        {
+          features.length > 0 &&
+          <FlatList
+            data={features}
+            renderItem={({item, index}) => rowItem(item, index)}
+            keyExtractor={(item, index) => index}
+            ListHeaderComponent={listHeader}
+          />
+        }
+        {
+          features.length === 0 &&
+          <Text>No Visible Feature</Text>
+        }
+        
+      </View>
+    )
+  }
+
   // DOING:
   render() {
     const { allpointOpacity, filter, selectedFeature, userLocation, circleRadius } = this.state
 
     return (
       <View style={styles.container}>
-        <MapboxGL.MapView
-          ref={(ref) => this._map = ref}
-          style={styles.mapContainer}
-          showUserLocation={true}
-          //userTrackingMode={MapboxGL.UserTrackingModes.Follow}
-          //styleURL={'http://172.16.16.23:1111/getMapStyle'}
-          styleURL={MAP_STYLE_URL}
-          //centerCoordinate={[100.5314, 13.7270]}
-          centerCoordinate={userLocation}
-          zoomLevel={12}
-          logoEnabled={false}
-          onPress={this.onPressMap}
-          onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
-          onRegionDidChange={this.onRegionDidChange}
-          onDidFinishRenderingMapFully={this.onDidFinishRenderingMapFully}
-          pitchEnabled={false}
-          rotateEnabled={false}
-        >
-          {/* {this.renderUserCurrentLocationRadius()} */}
-          <MapboxGL.VectorSource
-            id={'jobthai'}
-            //url={'http://172.16.16.23:1111/getTileJSON'}
-            url={`http://172.16.16.${SERVICE_LAST_IP}:1111/getTileJSON`}
+        <View style={styles.mapContainer}>
+          <MapboxGL.MapView
+            ref={(ref) => this._map = ref}
+            style={styles.mapContainer}
+            showUserLocation={true}
+            //userTrackingMode={MapboxGL.UserTrackingModes.Follow}
+            //styleURL={'http://172.16.16.23:1111/getMapStyle'}
+            styleURL={MAP_STYLE_URL}
+            //centerCoordinate={[100.5314, 13.7270]}
+            centerCoordinate={userLocation}
+            zoomLevel={12}
+            logoEnabled={false}
+            onPress={this.onPressMap}
+            onUserTrackingModeChange={(response) => console.log('onUserTrackingModeChange : ', response)}
+            onRegionDidChange={this.onRegionDidChange}
+            onDidFinishRenderingMapFully={this.onDidFinishRenderingMapFully}
+            pitchEnabled={false}
+            rotateEnabled={false}
           >
-            <MapboxGL.CircleLayer
-              id={'all-point'}
-              sourceID={'jobthai'}
-              sourceLayerID={'geojsonLayer'}
-              //aboveLayerID={aboveNearMeLayer}
-              style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity }]}
-            />
-            {
-              filter &&
-              (
-                <MapboxGL.CircleLayer
-                  id={'filtered-point'}
-                  sourceID={'jobthai'}
-                  sourceLayerID={'geojsonLayer'}
-                  //aboveLayerID={aboveNearMeLayer}
-                  style={[circleStyle.filteredPoint]}
-                  filter={filter}
-                />
-              )
-            }
-          </MapboxGL.VectorSource>
-          {
-            selectedFeature &&
-            <MapboxGL.ShapeSource
-              id={'selected-source'}
-              shape={selectedFeature}
+            {/* {this.renderUserCurrentLocationRadius()} */}
+            <MapboxGL.VectorSource
+              id={'jobthai'}
+              //url={'http://172.16.16.23:1111/getTileJSON'}
+              url={`http://172.16.16.${SERVICE_LAST_IP}:1111/getTileJSON`}
             >
               <MapboxGL.CircleLayer
-                id={'selected-point'}
-                sourceID={'selected-source'}
+                id={'all-point'}
+                sourceID={'jobthai'}
+                sourceLayerID={'geojsonLayer'}
                 //aboveLayerID={aboveNearMeLayer}
-                style={[circleStyle.selectedPoint]}
+                style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity }]}
               />
-            </MapboxGL.ShapeSource>
-          }
+              {
+                filter &&
+                (
+                  <MapboxGL.CircleLayer
+                    id={'filtered-point'}
+                    sourceID={'jobthai'}
+                    sourceLayerID={'geojsonLayer'}
+                    //aboveLayerID={aboveNearMeLayer}
+                    style={[circleStyle.filteredPoint]}
+                    filter={filter}
+                  />
+                )
+              }
+            </MapboxGL.VectorSource>
+            {
+              selectedFeature &&
+              <MapboxGL.ShapeSource
+                id={'selected-source'}
+                shape={selectedFeature}
+              >
+                <MapboxGL.CircleLayer
+                  id={'selected-point'}
+                  sourceID={'selected-source'}
+                  //aboveLayerID={aboveNearMeLayer}
+                  style={[circleStyle.selectedPoint]}
+                />
+              </MapboxGL.ShapeSource>
+            }
 
-          {/* {this.renderNearmePoints()} */}
+            {/* {this.renderNearmePoints()} */}
 
-          {this.renderVisibleFeatures()}
+            {this.renderVisibleFeatures()}
 
-        </MapboxGL.MapView>
-        {/* {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
-        {this.renderFilterButton({ text: FILTER_BKK, left: 80 })}
-        {this.renderFilterButton({ text: FILTER_SPK, left: 140 })}
-        {this.renderFilterButton({ text: FILTER_CNX, left: 200 })} */}
+          </MapboxGL.MapView>
+          {/* {this.renderFilterButton({ text: FILTER_ALL, left: 20 })}
+          {this.renderFilterButton({ text: FILTER_BKK, left: 80 })}
+          {this.renderFilterButton({ text: FILTER_SPK, left: 140 })}
+          {this.renderFilterButton({ text: FILTER_CNX, left: 200 })} */}
+          { this.renderUserCurrentLocation() }
+        </View>
         {/* {this.renderSnapshotImage()} */}
-        { this.renderUserCurrentLocation() }
+        {this.renderFeaturesList()}
       </View>
     );
   }
@@ -597,6 +645,11 @@ const styles = StyleSheet.create({
 
   mapContainer: {
     flex: 2,
+  },
+
+  listContainer: {
+    flex: 1,
+    backgroundColor: 'whitesmoke'
   },
 
   infoContainer: {
@@ -646,6 +699,22 @@ const styles = StyleSheet.create({
 
   undefineLocation: {
     fontSize: 20,
+  },
+
+  listFeatureRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'black',
+    flexDirection: 'row',
+    padding: 10,
+  },
+
+  listFeatureHeader: {
+    backgroundColor: 'coral',
+    padding: 10,
+  },
+
+  listFeatureItem: {
+    marginRight: 5,
   }
 })
 
