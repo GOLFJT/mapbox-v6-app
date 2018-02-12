@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Text,
 } from 'react-native'
 
 const MODE = {
@@ -19,6 +20,7 @@ export default class Home extends Component {
     
     return {
       title: params ? params.title : '',
+      headerRight: params ? params.headerRight : '',
     }
   }
 
@@ -35,7 +37,20 @@ export default class Home extends Component {
 
   setNavTitle = () => {
     const { setParams } = this.props.navigation
-    setParams({ title: this.state.navTitle })
+    const { navTitle } = this.state
+
+    setParams({ 
+      title: navTitle, 
+      headerRight: navTitle === MODE.MAP ? this.headerButton(MODE.LIST) : this.headerButton(MODE.MAP)
+    })
+  }
+
+  headerButton = (title) => {
+    return(
+      <TouchableOpacity onPress={this.toggleHeaderTitle}>
+        <Text>{title}</Text>
+      </TouchableOpacity>
+    )
   }
 
   toggleHeaderTitle = () => {
@@ -65,7 +80,6 @@ export default class Home extends Component {
   render() {
     return(
       <View style={styles.container}>
-        <TouchableOpacity style={{width: 50, height: 50, backgroundColor: 'pink'}} onPress={this.toggleHeaderTitle}/>
       </View>
     )
   }
