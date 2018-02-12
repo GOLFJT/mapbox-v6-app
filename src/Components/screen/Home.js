@@ -6,10 +6,14 @@ import {
   Text,
 } from 'react-native'
 
+import MapView from '../MapView'
+
 const MODE = {
   MAP: 'Map',
   LIST: 'List',
 }
+
+const MAP_STYLE_URL = 'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'
 
 export default class Home extends Component {
   // Navigation Config
@@ -26,7 +30,8 @@ export default class Home extends Component {
 
   // Initial State
   state = {
-    navTitle: MODE.MAP
+    navTitle: MODE.MAP,
+    userLocation: undefined,
   }
 
   // Lifecycle
@@ -77,9 +82,27 @@ export default class Home extends Component {
     })
   }
 
+  // DOINGG:
+  onUserLocationChange = (res, err) => {
+    console.log('== onUserLocationChange == : ', res)
+    this.setState({
+      userLocation: [res.longitude, res.latitude],
+    })
+  }
+
+  // DOING:
   render() {
+    const { userLocation } = this.state
     return(
       <View style={styles.container}>
+        <MapView
+          styleURL={MAP_STYLE_URL}
+          zoomLevel={12}
+          logoEnabled={false}
+          centerCoordinate={userLocation}
+          showUserLocation={true}
+          onUserLocationChange={this.onUserLocationChange}
+        />
       </View>
     )
   }
@@ -89,8 +112,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'coral',
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   }
 })
 

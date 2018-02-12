@@ -7,7 +7,7 @@ import {
 import { StackNavigator } from 'react-navigation'
 
 import FullMapView from '../FullMapView'
-import Home from '../Home'
+import Home from '../Components/screen/Home'
 
 const AppWithNavigation = StackNavigator({
   Home: {
