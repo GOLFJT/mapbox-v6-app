@@ -195,7 +195,7 @@ export default class FullMapView extends Component {
   sortFeaturesFromDistance = (visibleFeatures) => {
     // const { visibleFeatures } = this.state
 
-    const sortVisibleFeatures = {
+    let sortVisibleFeatures = {
       type: 'FeatureCollection',
       features: [...visibleFeatures.features]
     }
@@ -211,9 +211,18 @@ export default class FullMapView extends Component {
       return 0;
     })
 
+    // Remove duplicate point
+    sortVisibleFeatures.features = sortVisibleFeatures.features.filter((point, index, self) =>
+      index === self.findIndex((current) => (
+        current.properties.zip === point.properties.zip && current.properties.district === point.properties.district && current.properties.distance === point.properties.distance
+      ))
+    )
+
     this.setState({
       visibleFeatures: sortVisibleFeatures,
     }, () => console.log('visibleFeatures : ', this.state.visibleFeatures))
+
+
 
   }
 
@@ -356,7 +365,7 @@ export default class FullMapView extends Component {
     const screenCoordsSW = await this.getPointInView(coords[1])
     const boundingBox = this.getBoundingBox([screenCoordsNE, screenCoordsSW])
 
-    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point', 'filtered-point'])
+    this._map.queryRenderedFeaturesInRect(boundingBox, null, ['all-point'])
     .then((result) => {
       // Set visibleFeatures state
       this.setState({
@@ -589,7 +598,7 @@ export default class FullMapView extends Component {
                 //aboveLayerID={aboveNearMeLayer}
                 style={[circleStyle.point, { circleOpacity: allpointOpacity, circleStrokeOpacity: allpointOpacity }]}
               />
-              {
+              {/* {
                 filter &&
                 (
                   <MapboxGL.CircleLayer
@@ -601,9 +610,9 @@ export default class FullMapView extends Component {
                     filter={filter}
                   />
                 )
-              }
+              } */}
             </MapboxGL.VectorSource>
-            {
+            {/* {
               selectedFeature &&
               <MapboxGL.ShapeSource
                 id={'selected-source'}
@@ -616,7 +625,7 @@ export default class FullMapView extends Component {
                   style={[circleStyle.selectedPoint]}
                 />
               </MapboxGL.ShapeSource>
-            }
+            } */}
 
             {/* {this.renderNearmePoints()} */}
 
