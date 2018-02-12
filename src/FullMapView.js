@@ -203,13 +203,13 @@ export default class FullMapView extends Component {
 
     sortVisibleFeatures.features.sort((a, b) => {
       if (a.properties.distance > b.properties.distance) {
-        return 1;
+        return 1
       }
       if (a.properties.distance < b.properties.distance) {
-        return -1;
+        return -1
       }
       // a must be equal to b
-      return 0;
+      return 0
     })
 
     // Remove duplicate point
@@ -222,9 +222,6 @@ export default class FullMapView extends Component {
     this.setState({
       visibleFeatures: sortVisibleFeatures,
     }, () => console.log('visibleFeatures : ', this.state.visibleFeatures))
-
-
-
   }
 
   onPressMap = (res) => {
