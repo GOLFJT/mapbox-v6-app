@@ -32,7 +32,7 @@ const INTERVAL_TIME = 50
 
 const NEARME_RADIUS = 1 // KM
 
-const SERVICE_LAST_IP = 27
+const SERVICE_LAST_IP = 16
 
 const INITIAL_USER_LOCATION = [100.5018, 13.7563]
 const INITIAL_FEATURE_COLLECTION = {
@@ -42,6 +42,7 @@ const INITIAL_FEATURE_COLLECTION = {
 
 export default class FullMapView extends Component {
   state = {
+    allowLocation: false,
     selectedFeature: null,
     queryFeatures: null,
     filter: undefined,
@@ -105,7 +106,8 @@ export default class FullMapView extends Component {
         // });
         const { coords } = position
         this.setState({
-          userLocation: [coords.longitude, coords.latitude]
+          userLocation: [coords.longitude, coords.latitude],
+          allowLocation: true,
         }, () => {
           // this.createCircleRadius()
         })
@@ -113,21 +115,27 @@ export default class FullMapView extends Component {
       (error) => {
         console.log('watchUserLocation error : ', error)
         this.setState({
-          userLocation: INITIAL_USER_LOCATION
+          userLocation: INITIAL_USER_LOCATION,
+          allowLocation: false,
         })
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
     );
   }
 
-  updateUserLocation = () => {
+  updateUserLocation = (callback = () => {}) => {
     navigator.geolocation.getCurrentPosition((position) => {
       const { coords } = position
       this.setState({
-        userLocation: [coords.longitude, coords.latitude]
-      })
+        userLocation: [coords.longitude, coords.latitude],
+        allowLocation: true,
+      }, callback)
     }, (err) => {
       console.log('getPositionError : ', err)
+      this.setState({
+        allowLocation: false,
+      })
+      
     })
   }
   
@@ -479,6 +487,25 @@ export default class FullMapView extends Component {
     })
   }
 
+  // DOINGG:
+  renderUserCurrentLocation = () => {
+
+    const onPress = () => {
+      this.updateUserLocation(() => {
+        this._map.moveTo(this.state.userLocation)
+      })
+    }
+
+    return(
+      <TouchableOpacity style={styles.userLocation} onPress={onPress}>
+        {
+          !this.state.allowLocation &&
+          <Text style={styles.undefineLocation} >?</Text>
+        }
+      </TouchableOpacity>
+    )
+  }
+
   // DOING:
   render() {
     const { allpointOpacity, filter, selectedFeature, userLocation, circleRadius } = this.state
@@ -555,6 +582,7 @@ export default class FullMapView extends Component {
         {this.renderFilterButton({ text: FILTER_SPK, left: 140 })}
         {this.renderFilterButton({ text: FILTER_CNX, left: 200 })} */}
         {/* {this.renderSnapshotImage()} */}
+        { this.renderUserCurrentLocation() }
       </View>
     );
   }
@@ -602,6 +630,22 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  userLocation: {
+    width: 50, 
+    height: 50, 
+    borderRadius: 25, 
+    backgroundColor: 'lightblue', 
+    position: 'absolute', 
+    right: 10, 
+    bottom: 15,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+
+  undefineLocation: {
+    fontSize: 20,
   }
 })
 
