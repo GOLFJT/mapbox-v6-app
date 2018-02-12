@@ -163,6 +163,10 @@ export default class FullMapView extends Component {
 
       if (result.features.length > 0) {
         this.calculateNearMeDistance(result)
+      } else {
+        this.setState({
+          visibleFeatures: INITIAL_FEATURE_COLLECTION,
+        })
       }
 
     })
