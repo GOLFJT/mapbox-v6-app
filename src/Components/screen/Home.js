@@ -102,6 +102,8 @@ export default class Home extends Component {
           centerCoordinate={userLocation}
           showUserLocation={true}
           onUserLocationChange={this.onUserLocationChange}
+          onVisibleFeaturesChange={(visibleFeatures) => console.log('visibleFeatures : ', visibleFeatures)}
+          userLocation={userLocation}
         />
       </View>
     )
