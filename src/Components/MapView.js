@@ -49,7 +49,7 @@ export default class MapView extends Component {
       },
       (error) => {
         console.log('watchUserLocation error : ', error)
-        this.props.onUserLocationChange({}, error)
+        this.props.onUserLocationChange(undefined, error)
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10 },
     );

@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 
 import MapView from '../MapView'
+import ListView from '../ListView'
 
 const MODE = {
   MAP: 'Map',
@@ -14,6 +15,7 @@ const MODE = {
 }
 
 const MAP_STYLE_URL = 'https://mapgl.mapmagic.co.th/getstyle/mapmagic_th'
+const INITIAL_CENTER_COORD = [100.5018, 13.7563]
 
 export default class Home extends Component {
   // Navigation Config
@@ -84,27 +86,60 @@ export default class Home extends Component {
 
   // DOINGG:
   onUserLocationChange = (res, err) => {
-    console.log('== onUserLocationChange == : ', res)
+    console.log('== onUserLocationChange == : ', res, '\nerr: ', err)
+    let userLocation = undefined
+
+    if (!err) {
+      userLocation = [res.longitude, res.latitude]
+    } else {
+      userLocation = undefined
+    }
+
     this.setState({
-      userLocation: [res.longitude, res.latitude],
+      userLocation
     })
+    
+  }
+
+  // DOINGGG:
+  renderContent = () => {
+    const { navTitle } = this.state
+    if (navTitle === MODE.MAP) {
+      return(this.renderFullMap())
+    } else {
+      return(this.renderListView())
+    }
+  }
+
+  renderFullMap = () => {
+    const { userLocation } = this.state
+    let centerCoordinate = userLocation ? userLocation : INITIAL_CENTER_COORD
+    console.log('centerCoordinate : ', centerCoordinate)
+    return(
+      <MapView
+        styleURL={MAP_STYLE_URL}
+        zoomLevel={12}
+        logoEnabled={false}
+        centerCoordinate={centerCoordinate}
+        showUserLocation={true}
+        onUserLocationChange={this.onUserLocationChange}
+        onVisibleFeaturesChange={(visibleFeatures) => console.log('visibleFeatures : ', visibleFeatures)}
+        userLocation={userLocation}
+      />
+    )
+  }
+
+  renderListView = () => {
+    return(
+      <ListView />
+    )
   }
 
   // DOING:
   render() {
-    const { userLocation } = this.state
     return(
       <View style={styles.container}>
-        <MapView
-          styleURL={MAP_STYLE_URL}
-          zoomLevel={12}
-          logoEnabled={false}
-          centerCoordinate={userLocation}
-          showUserLocation={true}
-          onUserLocationChange={this.onUserLocationChange}
-          onVisibleFeaturesChange={(visibleFeatures) => console.log('visibleFeatures : ', visibleFeatures)}
-          userLocation={userLocation}
-        />
+        {this.renderContent()}
       </View>
     )
   }
