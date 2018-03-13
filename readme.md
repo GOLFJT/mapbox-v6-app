@@ -1,3 +1,9 @@
+# Animate point
+* Filter layer
+* Animate layer opacity
+
+----
+
 # Mapbox V.6 App
 
 This is experimental project for validate Mapbox V.6 features 
